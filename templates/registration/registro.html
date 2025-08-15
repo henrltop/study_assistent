@@ -1,0 +1,341 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Criar Conta - {{ titulo_pagina|default:"Assistente de Estudos" }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.registro-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--theme-bg-primary) 0%, var(--theme-bg-surface) 100%);
+}
+
+.registro-card {
+    background: var(--theme-bg-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--theme-border-radius);
+    box-shadow: var(--theme-shadow-lg);
+    max-width: 450px;
+    width: 100%;
+    padding: 2rem;
+}
+
+.registro-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.registro-header h2 {
+    color: var(--theme-text-primary);
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.registro-header p {
+    color: var(--theme-text-secondary);
+    font-size: 0.95rem;
+}
+
+.form-control:focus {
+    border-color: var(--theme-primary);
+    box-shadow: 0 0 0 0.2rem var(--theme-primary-focus);
+}
+
+.btn-registro {
+    background: var(--theme-primary);
+    border-color: var(--theme-primary);
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem;
+}
+
+.btn-registro:hover {
+    background: var(--theme-primary-hover);
+    border-color: var(--theme-primary-hover);
+    transform: translateY(-1px);
+}
+
+.registro-footer {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--theme-border);
+}
+
+.registro-footer a {
+    color: var(--theme-primary);
+    text-decoration: none;
+}
+
+.registro-footer a:hover {
+    color: var(--theme-primary-hover);
+    text-decoration: underline;
+}
+
+.brand-icon {
+    font-size: 3rem;
+    color: var(--theme-primary);
+    margin-bottom: 1rem;
+}
+
+.error-alert {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: var(--theme-danger);
+    border-radius: var(--theme-border-radius-sm);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.password-help {
+    background: var(--theme-bg-primary);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--theme-border-radius-sm);
+    padding: 0.75rem;
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: var(--theme-text-secondary);
+}
+
+.password-help ul {
+    margin: 0;
+    padding-left: 1.2rem;
+}
+
+.password-help li {
+    margin: 0.25rem 0;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="registro-container">
+    <div class="registro-card">
+        <div class="registro-header">
+            <i class="bi bi-person-plus brand-icon"></i>
+            <h2>Criar Conta</h2>
+            <p>Junte-se ao Assistente de Estudos</p>
+        </div>
+
+        <!-- Mensagens de erro -->
+        {% if form.errors %}
+            <div class="error-alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                <strong>Erro no cadastro:</strong>
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <p class="mb-1">
+                            {% if field == '__all__' %}
+                                {{ error }}
+                            {% else %}
+                                <strong>{{ field|title }}:</strong> {{ error }}
+                            {% endif %}
+                        </p>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Formulário de registro -->
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                        <i class="bi bi-person me-1"></i>
+                        Nome
+                    </label>
+                    <input type="text" 
+                           class="form-control {% if form.first_name.errors %}is-invalid{% endif %}" 
+                           id="{{ form.first_name.id_for_label }}"
+                           name="{{ form.first_name.name }}" 
+                           value="{{ form.first_name.value|default:'' }}"
+                           placeholder="Seu nome"
+                           required
+                           autofocus>
+                    {% if form.first_name.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.first_name.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                        <i class="bi bi-person me-1"></i>
+                        Sobrenome
+                    </label>
+                    <input type="text" 
+                           class="form-control {% if form.last_name.errors %}is-invalid{% endif %}" 
+                           id="{{ form.last_name.id_for_label }}"
+                           name="{{ form.last_name.name }}" 
+                           value="{{ form.last_name.value|default:'' }}"
+                           placeholder="Seu sobrenome"
+                           required>
+                    {% if form.last_name.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.last_name.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="{{ form.username.id_for_label }}" class="form-label">
+                    <i class="bi bi-at me-1"></i>
+                    Nome de usuário
+                </label>
+                <input type="text" 
+                       class="form-control {% if form.username.errors %}is-invalid{% endif %}" 
+                       id="{{ form.username.id_for_label }}"
+                       name="{{ form.username.name }}" 
+                       value="{{ form.username.value|default:'' }}"
+                       placeholder="Escolha um nome de usuário"
+                       required>
+                {% if form.username.errors %}
+                    <div class="invalid-feedback">
+                        {% for error in form.username.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label for="{{ form.email.id_for_label }}" class="form-label">
+                    <i class="bi bi-envelope me-1"></i>
+                    E-mail
+                </label>
+                <input type="email" 
+                       class="form-control {% if form.email.errors %}is-invalid{% endif %}" 
+                       id="{{ form.email.id_for_label }}"
+                       name="{{ form.email.name }}" 
+                       value="{{ form.email.value|default:'' }}"
+                       placeholder="seu.email@exemplo.com"
+                       required>
+                {% if form.email.errors %}
+                    <div class="invalid-feedback">
+                        {% for error in form.email.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label for="{{ form.password1.id_for_label }}" class="form-label">
+                    <i class="bi bi-lock me-1"></i>
+                    Senha
+                </label>
+                <input type="password" 
+                       class="form-control {% if form.password1.errors %}is-invalid{% endif %}" 
+                       id="{{ form.password1.id_for_label }}"
+                       name="{{ form.password1.name }}" 
+                       placeholder="Digite uma senha segura"
+                       required>
+                {% if form.password1.errors %}
+                    <div class="invalid-feedback">
+                        {% for error in form.password1.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <label for="{{ form.password2.id_for_label }}" class="form-label">
+                    <i class="bi bi-lock-fill me-1"></i>
+                    Confirmar senha
+                </label>
+                <input type="password" 
+                       class="form-control {% if form.password2.errors %}is-invalid{% endif %}" 
+                       id="{{ form.password2.id_for_label }}"
+                       name="{{ form.password2.name }}" 
+                       placeholder="Digite a senha novamente"
+                       required>
+                {% if form.password2.errors %}
+                    <div class="invalid-feedback">
+                        {% for error in form.password2.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Dicas de senha -->
+            <div class="password-help">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>Sua senha deve conter:</strong>
+                <ul>
+                    <li>Pelo menos 8 caracteres</li>
+                    <li>Não pode ser muito comum ou simples</li>
+                    <li>Não pode ser muito similar ao seu nome de usuário</li>
+                    <li>Não pode ser apenas números</li>
+                </ul>
+            </div>
+
+            <div class="d-grid mt-4">
+                <button type="submit" class="btn btn-registro">
+                    <i class="bi bi-person-plus me-2"></i>
+                    Criar Conta
+                </button>
+            </div>
+        </form>
+
+        <div class="registro-footer">
+            <p class="mb-2">
+                <small class="text-muted">
+                    Já tem uma conta? 
+                    <a href="{% url 'login' %}">Fazer login</a>
+                </small>
+            </p>
+            <a href="{% url 'home' %}" class="btn btn-link btn-sm">
+                <i class="bi bi-house me-1"></i>
+                Voltar ao início
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animação de entrada para o card
+    const registroCard = document.querySelector('.registro-card');
+    registroCard.style.opacity = '0';
+    registroCard.style.transform = 'translateY(30px)';
+    
+    setTimeout(() => {
+        registroCard.style.transition = 'all 0.5s ease-out';
+        registroCard.style.opacity = '1';
+        registroCard.style.transform = 'translateY(0)';
+    }, 100);
+
+    // Validação em tempo real da confirmação de senha
+    const password1 = document.getElementById('{{ form.password1.id_for_label }}');
+    const password2 = document.getElementById('{{ form.password2.id_for_label }}');
+    
+    function validarSenhas() {
+        if (password2.value && password1.value !== password2.value) {
+            password2.setCustomValidity('As senhas não coincidem');
+            password2.classList.add('is-invalid');
+        } else {
+            password2.setCustomValidity('');
+            password2.classList.remove('is-invalid');
+        }
+    }
+    
+    password1.addEventListener('input', validarSenhas);
+    password2.addEventListener('input', validarSenhas);
+});
+</script>
+{% endblock %}

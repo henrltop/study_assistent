@@ -1,0 +1,632 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ evento.titulo }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .evento-header {
+        background: linear-gradient(135deg, {{ evento.get_cor_evento }}, {{ evento.get_cor_evento }}cc);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+        border-radius: var(--theme-border-radius);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .evento-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="80" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="60" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="60" cy="40" r="1" fill="rgba(255,255,255,0.1)"/></svg>');
+        animation: float 20s infinite linear;
+    }
+    
+    @keyframes float {
+        0% { transform: translateX(-50px) translateY(-50px); }
+        100% { transform: translateX(0px) translateY(0px); }
+    }
+    
+    .evento-content {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .evento-card {
+        background: var(--theme-bg-surface) !important;
+        border: 1px solid var(--theme-border) !important;
+        border-radius: var(--theme-border-radius);
+        padding: 2rem;
+        box-shadow: var(--theme-shadow);
+        margin-bottom: 2rem;
+        color: var(--theme-text-primary) !important;
+    }
+    
+    .evento-info-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        background: var(--theme-bg-surface-elevated) !important;
+        border: 1px solid var(--theme-border);
+        border-radius: var(--theme-border-radius-sm);
+        transition: all 0.3s;
+        color: var(--theme-text-primary) !important;
+    }
+    
+    .evento-info-item:hover {
+        background: var(--theme-bg-surface) !important;
+        transform: translateX(5px);
+        border-color: var(--theme-primary);
+    }
+    
+    .evento-info-icon {
+        width: 40px;
+        height: 40px;
+        background: {{ evento.get_cor_evento }};
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+    
+    .evento-actions {
+        background: var(--theme-bg-surface) !important;
+        border: 1px solid var(--theme-border) !important;
+        border-radius: var(--theme-border-radius);
+        padding: 2rem;
+        box-shadow: var(--theme-shadow);
+        text-align: center;
+        color: var(--theme-text-primary) !important;
+    }
+    
+    .btn-evento {
+        border-radius: 25px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        margin: 0.5rem;
+        transition: all 0.3s;
+        min-width: 150px;
+    }
+    
+    .btn-evento:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+    }
+    
+    .btn-primary-custom {
+        background: var(--theme-primary) !important;
+        border: none;
+        color: white !important;
+    }
+    
+    .btn-primary-custom:hover {
+        background: var(--theme-primary-hover) !important;
+        color: white !important;
+    }
+    
+    .duracao-badge {
+        background: rgba(255, 122, 0, 0.1);
+        color: var(--theme-primary);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    
+    .tipo-badge {
+        background: {{ evento.get_cor_evento }};
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    
+    .countdown-section {
+        background: linear-gradient(135deg, var(--theme-bg-surface), var(--theme-bg-surface-elevated));
+        border: 1px solid var(--theme-border);
+        color: var(--theme-text-primary) !important;
+        padding: 2rem;
+        border-radius: var(--theme-border-radius);
+        margin-bottom: 2rem;
+        text-align: center;
+        box-shadow: var(--theme-shadow);
+    }
+    
+    .countdown-time {
+        font-size: 3rem;
+        font-weight: 700;
+        color: var(--theme-primary);
+    }
+
+    .evento-info-item h6 {
+        color: var(--theme-text-primary) !important;
+        margin-bottom: 0.5rem;
+    }
+
+    .evento-info-item p {
+        color: var(--theme-text-secondary) !important;
+        margin-bottom: 0;
+    }
+    
+    @media (max-width: 768px) {
+        .evento-header {
+            padding: 2rem 0;
+        }
+        
+        .evento-card, .evento-actions {
+            padding: 1.5rem;
+        }
+        
+        .countdown-time {
+            font-size: 2rem;
+        }
+        
+        .btn-evento {
+            min-width: auto;
+            width: 100%;
+            margin: 0.25rem 0;
+        }
+    }
+    
+    /* Estilos específicos para o modal */
+    .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1040;
+        display: none;
+    }
+    
+    .modal-custom {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 1050;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+    
+    .modal-custom.show {
+        display: flex !important;
+    }
+    
+    .modal-dialog {
+        max-width: 500px;
+        width: 100%;
+        position: relative;
+        z-index: 1060;
+    }
+    
+    .modal-content {
+        border-radius: var(--theme-border-radius);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        position: relative;
+        z-index: 1070;
+        animation: modalFadeIn 0.15s ease-out;
+    }
+    
+    @keyframes modalFadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.9) translateY(-50px);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+    
+    .modal-header .btn-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        opacity: 0.7;
+        cursor: pointer;
+        padding: 0.25rem;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal-header .btn-close:hover {
+        opacity: 1;
+    }
+    
+    .modal-footer .btn {
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="evento-header">
+    <div class="container evento-content">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-4 mb-3">{{ evento.titulo }}</h1>
+                <p class="lead mb-4">{{ evento.descricao|default:"Sem descrição adicional" }}</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="tipo-badge">
+                        {{ evento.get_tipo_evento_display }}
+                    </span>
+                    {% if evento.materia %}
+                    <span class="badge bg-light text-dark">
+                        <i class="fas fa-book me-1"></i>
+                        {{ evento.materia.nome }}
+                    </span>
+                    {% endif %}
+                    <span class="duracao-badge">
+                        <i class="fas fa-clock me-1"></i>
+                        {{ evento.duracao_em_horas }} horas
+                    </span>
+                </div>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="evento-actions d-md-block d-none">
+                    <a href="{% url 'calendario:evento_editar' evento.id %}" class="btn btn-primary-custom btn-evento">
+                        <i class="fas fa-edit me-1"></i>
+                        Editar
+                    </a>
+                    <button type="button" class="btn btn-danger btn-evento" onclick="showDeleteModal()">
+                        <i class="fas fa-trash me-1"></i>
+                        Excluir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Countdown Section (apenas para eventos futuros) -->
+{% now "Y-m-d H:i:s" as now %}
+{% if evento.data_inicio > now %}
+<div class="container">
+    <div class="countdown-section">
+        <h3 class="mb-3">
+            <i class="fas fa-hourglass-start me-2"></i>
+            Tempo Restante
+        </h3>
+        <div class="countdown-time" id="countdown">
+            Calculando...
+        </div>
+        <p class="mb-0 mt-2" style="color: var(--theme-text-secondary) !important;">até o início do evento</p>
+    </div>
+</div>
+{% endif %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="evento-card">
+                <h3 class="mb-4">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Informações do Evento
+                </h3>
+                
+                <div class="evento-info-item">
+                    <div class="evento-info-icon">
+                        <i class="fas fa-calendar"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Data de Início</h6>
+                        <p class="mb-0 text-muted">{{ evento.data_inicio|date:'d/m/Y às H:i' }}</p>
+                    </div>
+                </div>
+                
+                <div class="evento-info-item">
+                    <div class="evento-info-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Data de Término</h6>
+                        <p class="mb-0 text-muted">{{ evento.data_fim|date:'d/m/Y às H:i' }}</p>
+                    </div>
+                </div>
+                
+                <div class="evento-info-item">
+                    <div class="evento-info-icon">
+                        <i class="fas fa-tag"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Tipo de Evento</h6>
+                        <p class="mb-0 text-muted">{{ evento.get_tipo_evento_display }}</p>
+                    </div>
+                </div>
+                
+                {% if evento.materia %}
+                <div class="evento-info-item">
+                    <div class="evento-info-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Matéria</h6>
+                        <p class="mb-0 text-muted">
+                            {{ evento.materia.nome }} - {{ evento.materia.semestre.nome }}
+                        </p>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="evento-info-item">
+                    <div class="evento-info-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Duração</h6>
+                        <p class="mb-0 text-muted">{{ evento.duracao_em_horas }} horas</p>
+                    </div>
+                </div>
+                
+                {% if evento.lembrete %}
+                <div class="evento-info-item">
+                    <div class="evento-info-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Lembrete</h6>
+                        <p class="mb-0 text-muted">
+                            {{ evento.tempo_lembrete }} minutos antes do evento
+                        </p>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="evento-info-item">
+                    <div class="evento-info-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Criado em</h6>
+                        <p class="mb-0 text-muted">{{ evento.criado_em|date:'d/m/Y às H:i' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Ações do Evento -->
+            <div class="evento-actions d-md-none d-block mb-3">
+                <h5 class="mb-3">Ações</h5>
+                <a href="{% url 'calendario:evento_editar' evento.id %}" class="btn btn-primary-custom btn-evento">
+                    <i class="fas fa-edit me-1"></i>
+                    Editar Evento
+                </a>
+                <button type="button" class="btn btn-danger btn-evento" onclick="showDeleteModal()">
+                    <i class="fas fa-trash me-1"></i>
+                    Excluir Evento
+                </button>
+            </div>
+            
+            <!-- Navegação -->
+            <div class="evento-actions">
+                <h5 class="mb-3">Navegação</h5>
+                <a href="{% url 'calendario:calendario_home' %}" class="btn btn-secondary btn-evento">
+                    <i class="fas fa-calendar me-1"></i>
+                    Voltar ao Calendário
+                </a>
+                <a href="{% url 'calendario:eventos_lista' %}" class="btn btn-outline-secondary btn-evento">
+                    <i class="fas fa-list me-1"></i>
+                    Lista de Eventos
+                </a>
+                <a href="{% url 'calendario:evento_criar' %}" class="btn btn-outline-primary btn-evento">
+                    <i class="fas fa-plus me-1"></i>
+                    Novo Evento
+                </a>
+            </div>
+            
+            <!-- Informações Adicionais -->
+            {% if evento.materia %}
+            <div class="evento-card mt-3">
+                <h6 class="mb-3">
+                    <i class="fas fa-graduation-cap me-2"></i>
+                    Sobre a Matéria
+                </h6>
+                <div class="text-center">
+                    <div class="mb-2">
+                        <strong style="color: var(--theme-text-primary) !important;">{{ evento.materia.nome }}</strong>
+                    </div>
+                    <div class="small" style="color: var(--theme-text-secondary) !important;">
+                        {{ evento.materia.semestre.nome }}<br>
+                        Código: {{ evento.materia.codigo|default:"N/A" }}
+                    </div>
+                    <a href="#" class="btn btn-sm btn-outline-primary mt-2">
+                        Ver Matéria
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div class="modal-backdrop" id="modalBackdrop" onclick="hideDeleteModal()"></div>
+<div class="modal-custom" id="confirmDeleteModal">
+    <div class="modal-dialog">
+        <div class="modal-content" style="background: var(--theme-bg-surface); border: 1px solid var(--theme-border); color: var(--theme-text-primary);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--theme-border);">
+                <h5 class="modal-title" style="color: var(--theme-text-primary);">
+                    <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                    Confirmar Exclusão
+                </h5>
+                <button type="button" class="btn-close" onclick="hideDeleteModal()" aria-label="Fechar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" style="color: var(--theme-text-primary);">
+                <div class="text-center mb-3">
+                    <i class="fas fa-trash-alt text-danger" style="font-size: 3rem; opacity: 0.7;"></i>
+                </div>
+                <h6 class="text-center mb-3" style="color: var(--theme-text-primary);">Tem certeza que deseja excluir este evento?</h6>
+                <div class="alert" style="background: rgba(220, 53, 69, 0.1); border: 1px solid rgba(220, 53, 69, 0.2); color: var(--theme-text-primary);">
+                    <div class="mb-2"><strong>{{ evento.titulo }}</strong></div>
+                    <div class="small" style="color: var(--theme-text-secondary);">
+                        {{ evento.data_inicio|date:'d/m/Y às H:i' }} - {{ evento.get_tipo_evento_display }}
+                    </div>
+                </div>
+                <p class="text-center small" style="color: var(--theme-text-secondary);">
+                    <i class="fas fa-exclamation-circle me-1"></i>
+                    Esta ação não pode ser desfeita.
+                </p>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid var(--theme-border);">
+                <button type="button" class="btn btn-secondary" onclick="hideDeleteModal()">
+                    <i class="fas fa-times me-1"></i>
+                    Cancelar
+                </button>
+                <button type="button" class="btn btn-danger" onclick="deleteEvento()" id="confirmDeleteBtn">
+                    <i class="fas fa-trash me-1"></i>
+                    Sim, Excluir
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Funções para controle do modal
+function showDeleteModal() {
+    const modal = document.getElementById('confirmDeleteModal');
+    const backdrop = document.getElementById('modalBackdrop');
+    
+    if (modal && backdrop) {
+        backdrop.style.display = 'block';
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function hideDeleteModal() {
+    const modal = document.getElementById('confirmDeleteModal');
+    const backdrop = document.getElementById('modalBackdrop');
+    
+    if (modal && backdrop) {
+        backdrop.style.display = 'none';
+        modal.classList.remove('show');
+        document.body.style.overflow = '';
+    }
+}
+
+// Função para excluir o evento via AJAX
+function deleteEvento() {
+    const deleteBtn = document.getElementById('confirmDeleteBtn');
+    const originalText = deleteBtn.innerHTML;
+    
+    // Mostrar loading
+    deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Excluindo...';
+    deleteBtn.disabled = true;
+    
+    // Obter o CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                     document.querySelector('meta[name=csrf-token]')?.getAttribute('content') ||
+                     getCookie('csrftoken');
+    
+    fetch('{% url "calendario:evento_excluir" evento.id %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (response.ok) {
+            // Sucesso - redirecionar para o calendário
+            window.location.href = '{% url "calendario:calendario_home" %}';
+        } else {
+            throw new Error('Erro ao excluir evento');
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('Erro ao excluir o evento. Tente novamente.');
+        
+        // Restaurar botão
+        deleteBtn.innerHTML = originalText;
+        deleteBtn.disabled = false;
+    });
+}
+
+// Função para obter CSRF token do cookie
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Fechar modal com ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        hideDeleteModal();
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Countdown timer para eventos futuros
+    const countdownElement = document.getElementById('countdown');
+    if (countdownElement) {
+        const eventoDate = new Date('{{ evento.data_inicio|date:"Y-m-d H:i:s" }}');
+        
+        function updateCountdown() {
+            const now = new Date();
+            const timeDiff = eventoDate - now;
+            
+            if (timeDiff > 0) {
+                const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+                
+                let countdownText = '';
+                if (days > 0) {
+                    countdownText = `${days}d ${hours}h ${minutes}m`;
+                } else if (hours > 0) {
+                    countdownText = `${hours}h ${minutes}m ${seconds}s`;
+                } else {
+                    countdownText = `${minutes}m ${seconds}s`;
+                }
+                
+                countdownElement.textContent = countdownText;
+            } else {
+                countdownElement.textContent = 'Evento em andamento!';
+                countdownElement.parentElement.querySelector('p').textContent = 'O evento já começou';
+            }
+        }
+        
+        // Atualizar imediatamente e depois a cada segundo
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    }
+});
+</script>
+{% endblock %}

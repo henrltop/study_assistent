@@ -1,0 +1,296 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.material-card {
+    background: var(--theme-bg-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--theme-border-radius);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+}
+
+.material-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--theme-shadow-lg);
+}
+
+.material-card.material-pdf {
+    border-left-color: var(--theme-danger);
+}
+
+.material-card.material-txt {
+    border-left-color: var(--theme-info);
+}
+
+.material-card.material-docx {
+    border-left-color: var(--theme-primary);
+}
+
+.material-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.material-titulo {
+    color: var(--theme-text-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+    flex: 1;
+}
+
+.material-tipo {
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--theme-border-radius-sm);
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-left: 1rem;
+}
+
+.material-meta {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    font-size: 0.9rem;
+    color: var(--theme-text-secondary);
+    flex-wrap: wrap;
+}
+
+.material-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.filters-card {
+    background: var(--theme-bg-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--theme-border-radius);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-file-earmark-pdf me-2"></i>
+                {{ titulo_pagina }}
+            </h1>
+            <p class="text-muted mb-0">Todos os materiais didáticos do sistema</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-house me-1"></i>
+                Início
+            </a>
+            <a href="{% url 'academico:materias_lista' %}" class="btn btn-primary">
+                <i class="bi bi-mortarboard me-1"></i>
+                Ver Matérias
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters-card">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="busca" class="form-label">Buscar Materiais</label>
+                <input type="search" class="form-control" id="busca" name="busca" 
+                       value="{{ busca }}" placeholder="Nome do material, matéria...">
+            </div>
+            
+            <div class="col-md-3">
+                <label for="tipo" class="form-label">Tipo de Arquivo</label>
+                <select class="form-select" id="tipo" name="tipo">
+                    <option value="">Todos os tipos</option>
+                    {% for value, label in tipos_material %}
+                        <option value="{{ value }}" {% if tipo_selecionado == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-md-3">
+                <label for="materia" class="form-label">Matéria</label>
+                <select class="form-select" id="materia" name="materia">
+                    <option value="">Todas as matérias</option>
+                    {% for materia in materias %}
+                        <option value="{{ materia.pk }}" {% if materia_selecionada|stringformat:"s" == materia.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ materia.nome }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-funnel me-1"></i>
+                    Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Lista de Materiais -->
+    {% if page_obj.object_list %}
+        <div class="materials-lista">
+            {% for material in page_obj.object_list %}
+                <div class="material-card material-{{ material.tipo|lower }}">
+                    <div class="material-header">
+                        <h5 class="material-titulo">{{ material.titulo }}</h5>
+                        <span class="material-tipo" style="background: {% if material.tipo == 'PDF' %}var(--theme-danger){% elif material.tipo == 'TXT' %}var(--theme-info){% elif material.tipo == 'DOCX' %}var(--theme-primary){% else %}var(--theme-success){% endif %}; color: white;">
+                            {{ material.get_tipo_display }}
+                        </span>
+                    </div>
+                    
+                    <div class="material-meta">
+                        <div class="material-meta-item">
+                            <i class="bi bi-mortarboard text-primary"></i>
+                            <a href="{% url 'academico:materia_detail' material.materia.slug %}" class="text-decoration-none">
+                                {{ material.materia.nome }}
+                            </a>
+                        </div>
+                        <div class="material-meta-item">
+                            <i class="bi bi-bookmark text-info"></i>
+                            <span>{{ material.materia.semestre.nome }}</span>
+                        </div>
+                        <div class="material-meta-item">
+                            <i class="bi bi-file-earmark text-success"></i>
+                            <span>{{ material.get_tamanho_arquivo }}</span>
+                        </div>
+                        <div class="material-meta-item">
+                            <i class="bi bi-calendar3 text-warning"></i>
+                            <span>{{ material.data_upload|date:"d/m/Y H:i" }}</span>
+                        </div>
+                        {% if material.usuario %}
+                            <div class="material-meta-item">
+                                <i class="bi bi-person text-secondary"></i>
+                                <span>{{ material.usuario.get_full_name|default:material.usuario.username }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        <a href="{% url 'academico:material_download' material.pk %}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-download me-1"></i>
+                            Download
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Paginação -->
+        {% if page_obj.has_other_pages %}
+            <nav aria-label="Navegação de páginas" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if busca %}busca={{ busca }}&{% endif %}{% if tipo_selecionado %}tipo={{ tipo_selecionado }}&{% endif %}{% if materia_selecionada %}materia={{ materia_selecionada }}&{% endif %}page={{ page_obj.previous_page_number }}">
+                                <i class="bi bi-chevron-left"></i>
+                                Anterior
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% if busca %}busca={{ busca }}&{% endif %}{% if tipo_selecionado %}tipo={{ tipo_selecionado }}&{% endif %}{% if materia_selecionada %}materia={{ materia_selecionada }}&{% endif %}page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if busca %}busca={{ busca }}&{% endif %}{% if tipo_selecionado %}tipo={{ tipo_selecionado }}&{% endif %}{% if materia_selecionada %}materia={{ materia_selecionada }}&{% endif %}page={{ page_obj.next_page_number }}">
+                                Próxima
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <!-- Nenhum material encontrado -->
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <i class="bi bi-file-earmark-x" style="font-size: 4rem; color: var(--theme-text-muted);"></i>
+            </div>
+            <h4 class="text-muted mb-3">Nenhum material encontrado</h4>
+            {% if busca or tipo_selecionado or materia_selecionada %}
+                <p class="text-muted mb-4">Tente ajustar os filtros para ver mais materiais.</p>
+                <a href="{% url 'academico:materials_lista' %}" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-arrow-clockwise me-1"></i>
+                    Limpar Filtros
+                </a>
+            {% else %}
+                <p class="text-muted mb-4">Os materiais aparecerão aqui quando forem enviados nas matérias.</p>
+            {% endif %}
+            <a href="{% url 'academico:materias_lista' %}" class="btn btn-primary">
+                <i class="bi bi-mortarboard me-1"></i>
+                Ver Matérias
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animação de fade-in para os materiais
+    const materialCards = document.querySelectorAll('.material-card');
+    materialCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.4s ease-out';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+    
+    // Auto-submit dos filtros
+    const filterSelects = document.querySelectorAll('#tipo, #materia');
+    filterSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+    
+    // Busca com debounce
+    const buscaInput = document.getElementById('busca');
+    let searchTimeout;
+    
+    buscaInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            if (this.value.length >= 2 || this.value.length === 0) {
+                this.form.submit();
+            }
+        }, 500);
+    });
+});
+</script>
+{% endblock %}

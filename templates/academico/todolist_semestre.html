@@ -1,0 +1,373 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.tarefa-card {
+    background: var(--theme-bg-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--theme-border-radius);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+}
+
+.tarefa-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--theme-shadow-lg);
+}
+
+.tarefa-card.tarefa-pendente {
+    border-left-color: var(--theme-warning);
+}
+
+.tarefa-card.tarefa-em_andamento {
+    border-left-color: var(--theme-info);
+}
+
+.tarefa-card.tarefa-concluida {
+    border-left-color: var(--theme-success);
+    opacity: 0.8;
+}
+
+.tarefa-card.tarefa-atrasada {
+    border-left-color: var(--theme-danger);
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.semestre-header {
+    background: var(--theme-bg-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--theme-border-radius);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: var(--theme-bg-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--theme-border-radius);
+    padding: 1.25rem;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.filters-card {
+    background: var(--theme-bg-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--theme-border-radius);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.materia-link {
+    color: var(--theme-primary);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.materia-link:hover {
+    color: var(--theme-primary-hover);
+    text-decoration: underline;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Header do Semestre -->
+    <div class="semestre-header text-center">
+        <h1 class="h2 mb-2">
+            <i class="bi bi-bookmark me-2"></i>
+            {{ semestre.nome }}
+        </h1>
+        <p class="text-muted mb-3">{{ semestre.data_inicio|date:"d/m/Y" }} - {{ semestre.data_fim|date:"d/m/Y" }}</p>
+        
+        <div class="d-flex justify-content-center gap-2">
+            <a href="{% url 'semestre_detail' semestre.pk %}" class="btn btn-outline-primary">
+                <i class="bi bi-eye me-1"></i>
+                Ver Semestre
+            </a>
+            <a href="{% url 'academico:todolist_geral' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-list-check me-1"></i>
+                Todas as Tarefas
+            </a>
+        </div>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value text-primary">{{ stats.total }}</div>
+            <div class="text-muted small">Total</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value text-warning">{{ stats.pendentes }}</div>
+            <div class="text-muted small">Pendentes</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value text-success">{{ stats.concluidas }}</div>
+            <div class="text-muted small">Concluídas</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value text-danger">{{ stats.atrasadas }}</div>
+            <div class="text-muted small">Atrasadas</div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters-card">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="status" class="form-label">Status</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="pendente" {% if status_selecionado == 'pendente' %}selected{% endif %}>Pendentes</option>
+                    <option value="concluida" {% if status_selecionado == 'concluida' %}selected{% endif %}>Concluídas</option>
+                    <option value="" {% if not status_selecionado %}selected{% endif %}>Todas</option>
+                </select>
+            </div>
+            
+            <div class="col-md-6">
+                <label for="materia" class="form-label">Matéria</label>
+                <select class="form-select" id="materia" name="materia">
+                    <option value="">Todas as matérias</option>
+                    {% for materia in materias %}
+                        <option value="{{ materia.pk }}" {% if materia_selecionada|stringformat:"s" == materia.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ materia.nome }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-funnel me-1"></i>
+                    Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Lista de Tarefas -->
+    {% if page_obj.object_list %}
+        <div class="tarefas-lista">
+            {% for tarefa in page_obj.object_list %}
+                <div class="tarefa-card tarefa-{{ tarefa.status|lower }}{% if tarefa.esta_atrasada %} tarefa-atrasada{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1">
+                                {% if tarefa.status == 'CONCLUIDA' %}
+                                    <i class="bi bi-check-circle text-success me-2"></i>
+                                {% elif tarefa.esta_atrasada %}
+                                    <i class="bi bi-exclamation-triangle text-danger me-2"></i>
+                                {% else %}
+                                    <i class="bi bi-circle me-2"></i>
+                                {% endif %}
+                                {{ tarefa.titulo }}
+                            </h5>
+                            <div class="d-flex align-items-center gap-3 text-muted small">
+                                <span>
+                                    <i class="bi bi-mortarboard me-1"></i>
+                                    <a href="{% url 'academico:materia_detail' tarefa.materia.slug %}" class="materia-link">
+                                        {{ tarefa.materia.nome }}
+                                    </a>
+                                </span>
+                                {% if tarefa.prazo %}
+                                    <span class="{% if tarefa.esta_atrasada %}text-danger fw-semibold{% endif %}">
+                                        <i class="bi bi-calendar-event me-1"></i>
+                                        {% if tarefa.esta_atrasada %}
+                                            Atrasada - {{ tarefa.prazo|date:"d/m H:i" }}
+                                        {% else %}
+                                            {{ tarefa.prazo|date:"d/m H:i" }}
+                                        {% endif %}
+                                    </span>
+                                {% endif %}
+                                <span>
+                                    <i class="bi bi-clock me-1"></i>
+                                    {{ tarefa.criado_em|date:"d/m" }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge" style="background: {% if tarefa.status == 'CONCLUIDA' %}var(--theme-success){% elif tarefa.status == 'EM_ANDAMENTO' %}var(--theme-info){% else %}var(--theme-warning){% endif %};">
+                                {{ tarefa.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    {% if tarefa.descricao %}
+                        <p class="text-muted mb-3">{{ tarefa.descricao|truncatewords:20 }}</p>
+                    {% endif %}
+                    
+                    <!-- Indicador de prazo -->
+                    {% if tarefa.dias_para_prazo is not None %}
+                        <div class="mb-3">
+                            {% if tarefa.dias_para_prazo < 0 %}
+                                <div class="alert alert-danger border-0 py-2 px-3 mb-0 small">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>
+                                    {{ tarefa.dias_para_prazo|add:"-1"|abs }} dia{{ tarefa.dias_para_prazo|add:"-1"|abs|pluralize }} em atraso
+                                </div>
+                            {% elif tarefa.dias_para_prazo == 0 %}
+                                <div class="alert alert-warning border-0 py-2 px-3 mb-0 small">
+                                    <i class="bi bi-alarm me-1"></i>
+                                    Vence hoje!
+                                </div>
+                            {% elif tarefa.dias_para_prazo <= 3 %}
+                                <div class="alert alert-info border-0 py-2 px-3 mb-0 small">
+                                    <i class="bi bi-clock me-1"></i>
+                                    {{ tarefa.dias_para_prazo }} dia{{ tarefa.dias_para_prazo|pluralize }} restante{{ tarefa.dias_para_prazo|pluralize }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-end gap-2">
+                        {% if tarefa.status == 'CONCLUIDA' %}
+                            <button type="button" class="btn btn-outline-warning btn-sm" onclick="toggleTarefa({{ tarefa.pk }})">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>
+                                Reabrir
+                            </button>
+                        {% else %}
+                            <button type="button" class="btn btn-outline-success btn-sm" onclick="toggleTarefa({{ tarefa.pk }})">
+                                <i class="bi bi-check-circle me-1"></i>
+                                Concluir
+                            </button>
+                        {% endif %}
+                        <a href="{% url 'academico:tarefa_edit' tarefa.pk %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-pencil me-1"></i>
+                            Editar
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Paginação -->
+        {% if page_obj.has_other_pages %}
+            <nav aria-label="Navegação de páginas" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if status_selecionado %}status={{ status_selecionado }}&{% endif %}{% if materia_selecionada %}materia={{ materia_selecionada }}&{% endif %}page={{ page_obj.previous_page_number }}">
+                                <i class="bi bi-chevron-left"></i>
+                                Anterior
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% if status_selecionado %}status={{ status_selecionado }}&{% endif %}{% if materia_selecionada %}materia={{ materia_selecionada }}&{% endif %}page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if status_selecionado %}status={{ status_selecionado }}&{% endif %}{% if materia_selecionada %}materia={{ materia_selecionada }}&{% endif %}page={{ page_obj.next_page_number }}">
+                                Próxima
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <!-- Nenhuma tarefa encontrada -->
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <i class="bi bi-check-square" style="font-size: 4rem; color: var(--theme-text-muted);"></i>
+            </div>
+            <h4 class="text-muted mb-3">Nenhuma tarefa encontrada</h4>
+            {% if status_selecionado or materia_selecionada %}
+                <p class="text-muted mb-4">Tente ajustar os filtros para ver mais tarefas.</p>
+                <a href="{% url 'academico:todolist_semestre' semestre.pk %}" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-arrow-clockwise me-1"></i>
+                    Limpar Filtros
+                </a>
+            {% else %}
+                <p class="text-muted mb-4">
+                    Ainda não há tarefas criadas para este semestre. 
+                    Acesse as matérias para criar novas tarefas.
+                </p>
+            {% endif %}
+            <a href="{% url 'semestre_detail' semestre.pk %}" class="btn btn-primary">
+                <i class="bi bi-mortarboard me-1"></i>
+                Ver Matérias
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animação de fade-in para as tarefas
+    const tarefaCards = document.querySelectorAll('.tarefa-card');
+    tarefaCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.4s ease-out';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 50);
+    });
+    
+    // Auto-submit dos filtros
+    const filterSelects = document.querySelectorAll('#status, #materia');
+    filterSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+});
+
+// Função para toggle do status da tarefa
+function toggleTarefa(tarefaId) {
+    fetch(`/academico/tarefas/${tarefaId}/toggle/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.sucesso) {
+            // Recarregar a página para atualizar a visualização
+            location.reload();
+        } else {
+            AssistenteEstudos.showToast('Erro ao atualizar tarefa', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        AssistenteEstudos.showToast('Erro ao processar solicitação', 'error');
+    });
+}
+</script>
+{% endblock %}

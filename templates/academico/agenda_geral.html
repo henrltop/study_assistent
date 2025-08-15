@@ -1,0 +1,393 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.evento-card {
+    background: var(--theme-bg-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--theme-border-radius);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+}
+
+.evento-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--theme-shadow-lg);
+}
+
+.evento-card.evento-prova {
+    border-left-color: var(--theme-danger);
+}
+
+.evento-card.evento-trabalho {
+    border-left-color: var(--theme-warning);
+}
+
+.evento-card.evento-aula {
+    border-left-color: var(--theme-info);
+}
+
+.evento-card.evento-atividade {
+    border-left-color: var(--theme-success);
+}
+
+.evento-card.evento-outro {
+    border-left-color: var(--theme-primary);
+}
+
+.evento-header {
+    display: flex;
+    justify-content: between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.evento-titulo {
+    color: var(--theme-text-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+    flex: 1;
+}
+
+.evento-tipo {
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--theme-border-radius-sm);
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-left: 1rem;
+}
+
+.evento-meta {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    font-size: 0.9rem;
+    color: var(--theme-text-secondary);
+}
+
+.evento-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.filters-card {
+    background: var(--theme-bg-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--theme-border-radius);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.sidebar-card {
+    background: var(--theme-bg-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--theme-border-radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.evento-importante {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: var(--theme-bg-surface-elevated);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--theme-border-radius-sm);
+    margin-bottom: 0.5rem;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+}
+
+.evento-importante:hover {
+    transform: translateX(4px);
+    border-color: var(--theme-primary);
+    color: inherit;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-calendar-event me-2"></i>
+                {{ titulo_pagina }}
+            </h1>
+            <p class="text-muted mb-0">Todos os eventos e compromissos acadêmicos</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-house me-1"></i>
+                Início
+            </a>
+            <a href="{% url 'academico:evento_geral_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i>
+                Novo Evento
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Filtros -->
+            <div class="filters-card">
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="periodo" class="form-label">Período</label>
+                        <select class="form-select" id="periodo" name="periodo">
+                            <option value="proximos" {% if periodo == 'proximos' %}selected{% endif %}>Próximos Eventos</option>
+                            <option value="todos" {% if periodo == 'todos' %}selected{% endif %}>Todos</option>
+                            <option value="passados" {% if periodo == 'passados' %}selected{% endif %}>Eventos Passados</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label for="tipo" class="form-label">Tipo de Evento</label>
+                        <select class="form-select" id="tipo" name="tipo">
+                            <option value="">Todos os tipos</option>
+                            {% for value, label in tipos_evento %}
+                                <option value="{{ value }}" {% if tipo_selecionado == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-funnel me-1"></i>
+                            Filtrar
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Lista de Eventos -->
+            {% if page_obj.object_list %}
+                <div class="eventos-lista">
+                    {% for evento in page_obj.object_list %}
+                        <div class="evento-card evento-{{ evento.tipo|lower }}">
+                            <div class="evento-header">
+                                <h5 class="evento-titulo">{{ evento.titulo }}</h5>
+                                <span class="evento-tipo" style="background: {% if evento.tipo == 'PROVA' %}var(--theme-danger){% elif evento.tipo == 'TRABALHO' %}var(--theme-warning){% elif evento.tipo == 'AULA' %}var(--theme-info){% elif evento.tipo == 'ATIVIDADE' %}var(--theme-success){% else %}var(--theme-primary){% endif %}; color: white;">
+                                    {{ evento.get_tipo_display }}
+                                </span>
+                            </div>
+                            
+                            {% if evento.descricao %}
+                                <p class="text-muted mb-3">{{ evento.descricao|truncatewords:20 }}</p>
+                            {% endif %}
+                            
+                            <div class="evento-meta">
+                                <div class="evento-meta-item">
+                                    <i class="bi bi-calendar3 text-primary"></i>
+                                    <span>{{ evento.data_inicio|date:"d/m/Y" }}</span>
+                                </div>
+                                <div class="evento-meta-item">
+                                    <i class="bi bi-clock text-info"></i>
+                                    <span>{{ evento.data_inicio|date:"H:i" }}</span>
+                                    {% if evento.data_fim %}
+                                        - {{ evento.data_fim|date:"H:i" }}
+                                    {% endif %}
+                                </div>
+                                {% if evento.materia %}
+                                    <div class="evento-meta-item">
+                                        <i class="bi bi-mortarboard text-success"></i>
+                                        <a href="{% url 'academico:materia_detail' evento.materia.slug %}" class="text-decoration-none">
+                                            {{ evento.materia.nome }}
+                                        </a>
+                                    </div>
+                                {% endif %}
+                                {% if evento.semestre %}
+                                    <div class="evento-meta-item">
+                                        <i class="bi bi-bookmark text-warning"></i>
+                                        <span>{{ evento.semestre.nome }}</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="d-flex justify-content-end gap-2 mt-3">
+                                <a href="{% url 'academico:evento_edit' evento.pk %}" class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-pencil me-1"></i>
+                                    Editar
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Paginação -->
+                {% if page_obj.has_other_pages %}
+                    <nav aria-label="Navegação de páginas" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% if periodo %}periodo={{ periodo }}&{% endif %}{% if tipo_selecionado %}tipo={{ tipo_selecionado }}&{% endif %}page={{ page_obj.previous_page_number }}">
+                                        <i class="bi bi-chevron-left"></i>
+                                        Anterior
+                                    </a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?{% if periodo %}periodo={{ periodo }}&{% endif %}{% if tipo_selecionado %}tipo={{ tipo_selecionado }}&{% endif %}page={{ num }}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% if periodo %}periodo={{ periodo }}&{% endif %}{% if tipo_selecionado %}tipo={{ tipo_selecionado }}&{% endif %}page={{ page_obj.next_page_number }}">
+                                        Próxima
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <!-- Nenhum evento encontrado -->
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="bi bi-calendar-x" style="font-size: 4rem; color: var(--theme-text-muted);"></i>
+                    </div>
+                    <h4 class="text-muted mb-3">Nenhum evento encontrado</h4>
+                    {% if periodo != 'todos' or tipo_selecionado %}
+                        <p class="text-muted mb-4">Tente ajustar os filtros para ver mais eventos.</p>
+                        <a href="{% url 'academico:agenda_geral' %}" class="btn btn-outline-primary me-2">
+                            <i class="bi bi-arrow-clockwise me-1"></i>
+                            Limpar Filtros
+                        </a>
+                    {% else %}
+                        <p class="text-muted mb-4">Comece criando seu primeiro evento.</p>
+                    {% endif %}
+                    <a href="{% url 'academico:evento_geral_create' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-1"></i>
+                        Criar Evento
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Próximos Eventos Importantes -->
+            {% if proximos_importantes %}
+                <div class="sidebar-card">
+                    <h5 class="mb-3">
+                        <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                        Eventos Importantes
+                    </h5>
+                    
+                    {% for evento in proximos_importantes %}
+                        <div class="evento-importante">
+                            <div class="flex-shrink-0">
+                                <i class="bi bi-{% if evento.tipo == 'PROVA' %}clipboard-check text-danger{% elif evento.tipo == 'TRABALHO' %}file-earmark-text text-warning{% else %}calendar-event text-primary{% endif %}" style="font-size: 1.2rem;"></i>
+                            </div>
+                            <div class="flex-grow-1 min-width-0">
+                                <div class="fw-semibold text-truncate">{{ evento.titulo }}</div>
+                                <div class="text-muted small">
+                                    {{ evento.data_inicio|date:"d/m H:i" }}
+                                    {% if evento.materia %}
+                                        • {{ evento.materia.nome }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <!-- Estatísticas -->
+            <div class="sidebar-card">
+                <h5 class="mb-3">
+                    <i class="bi bi-graph-up text-primary me-2"></i>
+                    Estatísticas
+                </h5>
+                
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="p-3 rounded-3" style="background: var(--theme-bg-surface-elevated);">
+                            <div class="h4 text-primary mb-1">{{ page_obj.paginator.count }}</div>
+                            <small class="text-muted">Total Eventos</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="p-3 rounded-3" style="background: var(--theme-bg-surface-elevated);">
+                            <div class="h4 text-success mb-1">{{ proximos_importantes|length }}</div>
+                            <small class="text-muted">Importantes</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Ações Rápidas -->
+            <div class="sidebar-card">
+                <h5 class="mb-3">
+                    <i class="bi bi-lightning text-warning me-2"></i>
+                    Ações Rápidas
+                </h5>
+                
+                <div class="d-grid gap-2">
+                    <a href="{% url 'academico:evento_geral_create' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-plus-circle me-1"></i>
+                        Novo Evento Geral
+                    </a>
+                    <a href="{% url 'academico:materias_lista' %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-mortarboard me-1"></i>
+                        Ver Matérias
+                    </a>
+                    <a href="{% url 'academico:todolist_geral' %}" class="btn btn-outline-info btn-sm">
+                        <i class="bi bi-check-square me-1"></i>
+                        Lista de Tarefas
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animação de fade-in para os eventos
+    const eventCards = document.querySelectorAll('.evento-card');
+    eventCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.4s ease-out';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+    
+    // Auto-submit dos filtros
+    const filterSelects = document.querySelectorAll('#periodo, #tipo');
+    filterSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+});
+</script>
+{% endblock %}

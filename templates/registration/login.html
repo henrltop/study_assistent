@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login - {{ titulo_pagina|default:"Assistente de Estudos" }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--theme-bg-primary) 0%, var(--theme-bg-surface) 100%);
+}
+
+.login-card {
+    background: var(--theme-bg-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--theme-border-radius);
+    box-shadow: var(--theme-shadow-lg);
+    max-width: 400px;
+    width: 100%;
+    padding: 2rem;
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.login-header h2 {
+    color: var(--theme-text-primary);
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.login-header p {
+    color: var(--theme-text-secondary);
+    font-size: 0.95rem;
+}
+
+.form-control:focus {
+    border-color: var(--theme-primary);
+    box-shadow: 0 0 0 0.2rem var(--theme-primary-focus);
+}
+
+.btn-login {
+    background: var(--theme-primary);
+    border-color: var(--theme-primary);
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem;
+}
+
+.btn-login:hover {
+    background: var(--theme-primary-hover);
+    border-color: var(--theme-primary-hover);
+    transform: translateY(-1px);
+}
+
+.login-footer {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--theme-border);
+}
+
+.login-footer a {
+    color: var(--theme-primary);
+    text-decoration: none;
+}
+
+.login-footer a:hover {
+    color: var(--theme-primary-hover);
+    text-decoration: underline;
+}
+
+.brand-icon {
+    font-size: 3rem;
+    color: var(--theme-primary);
+    margin-bottom: 1rem;
+}
+
+.error-alert {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: var(--theme-danger);
+    border-radius: var(--theme-border-radius-sm);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <i class="bi bi-mortarboard brand-icon"></i>
+            <h2>Bem-vindo</h2>
+            <p>Faça login para acessar o Assistente de Estudos</p>
+        </div>
+
+        <!-- Mensagens de erro -->
+        {% if form.errors %}
+            <div class="error-alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                <strong>Erro no login:</strong>
+                {% if form.non_field_errors %}
+                    {% for error in form.non_field_errors %}
+                        <p class="mb-0">{{ error }}</p>
+                    {% endfor %}
+                {% else %}
+                    <p class="mb-0">Verifique os dados informados e tente novamente.</p>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <!-- Formulário de login -->
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="mb-3">
+                <label for="{{ form.username.id_for_label }}" class="form-label">
+                    <i class="bi bi-person me-1"></i>
+                    Usuário
+                </label>
+                <input type="text" 
+                       class="form-control {% if form.username.errors %}is-invalid{% endif %}" 
+                       id="{{ form.username.id_for_label }}"
+                       name="{{ form.username.name }}" 
+                       value="{{ form.username.value|default:'' }}"
+                       placeholder="Digite seu nome de usuário"
+                       required
+                       autofocus>
+                {% if form.username.errors %}
+                    <div class="invalid-feedback">
+                        {% for error in form.username.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <label for="{{ form.password.id_for_label }}" class="form-label">
+                    <i class="bi bi-lock me-1"></i>
+                    Senha
+                </label>
+                <input type="password" 
+                       class="form-control {% if form.password.errors %}is-invalid{% endif %}" 
+                       id="{{ form.password.id_for_label }}"
+                       name="{{ form.password.name }}" 
+                       placeholder="Digite sua senha"
+                       required>
+                {% if form.password.errors %}
+                    <div class="invalid-feedback">
+                        {% for error in form.password.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="d-grid">
+                <button type="submit" class="btn btn-login">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>
+                    Entrar
+                </button>
+            </div>
+
+            <!-- Campo hidden para o next -->
+            {% if next %}
+                <input type="hidden" name="next" value="{{ next }}">
+            {% endif %}
+        </form>
+
+        <div class="login-footer">
+            <p class="mb-2">
+                <small class="text-muted">
+                    Primeira vez aqui? 
+                    <a href="{% url 'registro' %}">Criar uma conta</a>
+                </small>
+            </p>
+            <a href="{% url 'home' %}" class="btn btn-link btn-sm">
+                <i class="bi bi-house me-1"></i>
+                Voltar ao início
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animação de entrada para o card
+    const loginCard = document.querySelector('.login-card');
+    loginCard.style.opacity = '0';
+    loginCard.style.transform = 'translateY(30px)';
+    
+    setTimeout(() => {
+        loginCard.style.transition = 'all 0.5s ease-out';
+        loginCard.style.opacity = '1';
+        loginCard.style.transform = 'translateY(0)';
+    }, 100);
+});
+</script>
+{% endblock %}

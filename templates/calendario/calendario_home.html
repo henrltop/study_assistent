@@ -1,0 +1,1113 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load calendario_extras %}
+
+{% block title %}Calendário Acadêmico - {{ month_name }} {{ current_year }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Container principal do calendário */
+    .calendar-container {
+        background: linear-gradient(145deg, #2c2c2c 0%, #1e1e1e 100%);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 
+            0 20px 40px rgba(0,0,0,0.4),
+            inset 0 1px 0 rgba(255,255,255,0.1);
+        border: 1px solid #404040;
+        margin-bottom: 2rem;
+    }
+    
+    /* Estatísticas Cards */
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: linear-gradient(145deg, #2c2c2c 0%, #1e1e1e 100%);
+        border: 1px solid #404040;
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #FF6B35, #F7931E);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(255, 107, 53, 0.2);
+    }
+    
+    .stat-icon {
+        font-size: 2.5rem;
+        color: #FF6B35;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: white;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-label {
+        color: #ccc;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    /* Próximos eventos */
+    .upcoming-events {
+        background: linear-gradient(145deg, #2c2c2c 0%, #1e1e1e 100%);
+        border: 1px solid #404040;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .upcoming-events h4 {
+        color: white;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #FF6B35;
+    }
+    
+    .upcoming-event {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        margin-bottom: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .upcoming-event:hover {
+        background: rgba(255, 107, 53, 0.1);
+        transform: translateX(5px);
+    }
+    
+    .event-date {
+        background: #FF6B35;
+        color: white;
+        padding: 0.5rem;
+        border-radius: 10px;
+        text-align: center;
+        font-weight: bold;
+        min-width: 60px;
+    }
+    
+    .event-info h6 {
+        color: white;
+        margin: 0;
+        font-weight: 600;
+    }
+    
+    .event-info small {
+        color: #ccc;
+    }
+    
+    /* Botão flutuante */
+    .add-event-btn {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #FF6B35, #F7931E);
+        border: none;
+        border-radius: 50%;
+        color: white;
+        font-size: 1.8rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+        z-index: 1000;
+    }
+    
+    .add-event-btn:hover {
+        transform: scale(1.1) translateY(-3px);
+        box-shadow: 0 12px 35px rgba(255, 107, 53, 0.6);
+    }
+    
+    /* Cabeçalho do calendário */
+    .calendar-header {
+        background: linear-gradient(135deg, #FF6B35 0%, #F7931E 50%, #FFB347 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .calendar-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+        opacity: 0.3;
+    }
+    
+    .calendar-header h1 {
+        position: relative;
+        z-index: 2;
+        margin: 0;
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    /* Navegação do calendário */
+    .calendar-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1.5rem;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .calendar-nav a {
+        color: white;
+        text-decoration: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 30px;
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(10px);
+        transition: all 0.4s ease;
+        font-weight: 600;
+        border: 2px solid rgba(255,255,255,0.2);
+    }
+    
+    .calendar-nav a:hover {
+        background: rgba(255,255,255,0.25);
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        border-color: rgba(255,255,255,0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .current-month {
+        font-size: 1.8rem;
+        font-weight: bold;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    }
+    
+    /* Botões de visualização */
+    .view-toggle {
+        display: flex;
+        gap: 0.5rem;
+        margin: 1rem 0;
+        justify-content: center;
+    }
+    
+    .view-btn {
+        padding: 0.75rem 1.5rem;
+        border: 2px solid rgba(255,255,255,0.3);
+        background: rgba(255,255,255,0.1);
+        color: white;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .view-btn.active {
+        background: rgba(255,255,255,0.25);
+        border-color: rgba(255,255,255,0.6);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+    
+    .view-btn:hover {
+        background: rgba(255,255,255,0.25);
+        border-color: rgba(255,255,255,0.5);
+        transform: translateY(-2px);
+        color: white;
+        text-decoration: none;
+    }
+    
+    /* Grid do calendário mensal */
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 2px;
+        background: linear-gradient(145deg, #333 0%, #222 100%);
+        padding: 2px;
+    }
+    
+    /* Grid do calendário semanal */
+    .calendar-week-grid {
+        display: grid;
+        grid-template-columns: 80px repeat(7, 1fr);
+        gap: 1px;
+        background: linear-gradient(145deg, #333 0%, #222 100%);
+        padding: 1px;
+    }
+    
+    /* Cabeçalhos dos dias da semana */
+    .calendar-day-header {
+        background: linear-gradient(145deg, #4a4a4a 0%, #3a3a3a 100%);
+        color: #FFB347;
+        padding: 1.2rem;
+        text-align: center;
+        font-weight: bold;
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border-bottom: 2px solid #FF6B35;
+    }
+    
+    .week-time-header {
+        background: linear-gradient(145deg, #4a4a4a 0%, #3a3a3a 100%);
+        color: #FFB347;
+        padding: 1rem 0.5rem;
+        text-align: center;
+        font-weight: bold;
+        border-bottom: 2px solid #FF6B35;
+    }
+    
+    /* Células dos dias */
+    .calendar-day {
+        background: linear-gradient(145deg, #2a2a2a 0%, #1a1a1a 100%);
+        min-height: 130px;
+        padding: 0.75rem;
+        position: relative;
+        transition: all 0.4s ease;
+        border: 2px solid transparent;
+        cursor: pointer;
+    }
+    
+    .calendar-day:hover {
+        background: linear-gradient(145deg, #3a3a3a 0%, #2a2a2a 100%);
+        border-color: #FF6B35;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(255, 107, 53, 0.2);
+    }
+    
+    .calendar-day.today {
+        background: linear-gradient(145deg, 
+            rgba(255, 107, 53, 0.2) 0%, 
+            rgba(247, 147, 30, 0.2) 50%,
+            rgba(255, 179, 71, 0.2) 100%);
+        border-color: #FF6B35;
+        box-shadow: 
+            0 0 20px rgba(255, 107, 53, 0.4),
+            inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+    
+    .calendar-day.other-month {
+        background: linear-gradient(145deg, #1a1a1a 0%, #0a0a0a 100%);
+        color: #555;
+        opacity: 0.5;
+        cursor: default;
+    }
+    
+    /* Números dos dias */
+    .day-number {
+        font-weight: bold;
+        font-size: 1.3rem;
+        margin-bottom: 0.5rem;
+        color: #FFB347;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+    
+    .calendar-day.today .day-number {
+        color: #FF6B35;
+        font-size: 1.5rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+    }
+    
+    /* Container de eventos */
+    .day-events {
+        max-height: 85px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #FF6B35 transparent;
+    }
+    
+    .day-events::-webkit-scrollbar {
+        width: 4px;
+    }
+    
+    .day-events::-webkit-scrollbar-thumb {
+        background: #FF6B35;
+        border-radius: 2px;
+    }
+    
+    /* Eventos na visualização semanal */
+    .week-events {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        height: 100%;
+    }
+    
+    /* Items de eventos com cores únicas */
+    .event-item {
+        padding: 0.3rem 0.5rem;
+        margin: 0.2rem 0;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-weight: 600;
+        position: relative;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        color: white !important;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+    }
+    
+    .event-item:hover {
+        transform: scale(1.08) translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        z-index: 10;
+    }
+    
+    /* Evento na visualização semanal */
+    .week-event-item {
+        padding: 0.2rem 0.4rem;
+        margin: 1px 0;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 600;
+        position: relative;
+        border-left: 3px solid rgba(255,255,255,0.3);
+        color: white !important;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .week-event-item:hover {
+        transform: translateX(3px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        z-index: 5;
+    }
+    
+    /* Cores específicas por tipo de evento */
+    .event-PROVA {
+        background: linear-gradient(135deg, #DC3545, #B02A37) !important;
+        border-left: 4px solid #A02834;
+    }
+    
+    .event-TRABALHO {
+        background: linear-gradient(135deg, #FFC107, #E0A800) !important;
+        border-left: 4px solid #CC9A00;
+        color: #000 !important;
+        text-shadow: none;
+    }
+    
+    .event-AULA {
+        background: linear-gradient(135deg, #28A745, #1E7E34) !important;
+        border-left: 4px solid #155724;
+    }
+    
+    .event-ESTUDO {
+        background: linear-gradient(135deg, #17A2B8, #117A8B) !important;
+        border-left: 4px solid #0C525D;
+    }
+    
+    .event-REUNIAO {
+        background: linear-gradient(135deg, #6F42C1, #59359A) !important;
+        border-left: 4px solid #4C2A85;
+    }
+    
+    .event-OUTRO {
+        background: linear-gradient(135deg, #FF6B35, #E55A2B) !important;
+        border-left: 4px solid #CC4E23;
+    }
+    
+    /* Aplicar cores também na visualização semanal */
+    .week-event-item.event-PROVA {
+        background: linear-gradient(135deg, #DC3545, #B02A37) !important;
+    }
+    
+    .week-event-item.event-TRABALHO {
+        background: linear-gradient(135deg, #FFC107, #E0A800) !important;
+        color: #000 !important;
+        text-shadow: none;
+    }
+    
+    .week-event-item.event-AULA {
+        background: linear-gradient(135deg, #28A745, #1E7E34) !important;
+    }
+    
+    .week-event-item.event-ESTUDO {
+        background: linear-gradient(135deg, #17A2B8, #117A8B) !important;
+    }
+    
+    .week-event-item.event-REUNIAO {
+        background: linear-gradient(135deg, #6F42C1, #59359A) !important;
+    }
+    
+    .week-event-item.event-OUTRO {
+        background: linear-gradient(135deg, #FF6B35, #E55A2B) !important;
+    }
+    
+    /* Modal customizado */
+    .modal-content {
+        background: linear-gradient(145deg, #2c2c2c 0%, #1e1e1e 100%);
+        border: 1px solid #404040;
+        border-radius: 15px;
+    }
+    
+    .modal-header {
+        border-bottom: 1px solid #404040;
+        background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+        border-radius: 15px 15px 0 0;
+    }
+    
+    .modal-footer {
+        border-top: 1px solid #404040;
+    }
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .calendar-header h1 { 
+            font-size: 1.8rem; 
+        }
+        .calendar-day { 
+            min-height: 100px; 
+            padding: 0.5rem; 
+        }
+        .day-number { 
+            font-size: 1.1rem; 
+        }
+        .event-item { 
+            font-size: 0.65rem; 
+            padding: 0.2rem 0.3rem; 
+        }
+        .add-event-btn { 
+            width: 60px; 
+            height: 60px; 
+            font-size: 1.4rem; 
+            bottom: 1.5rem; 
+            right: 1.5rem; 
+        }
+        .stats-cards { 
+            grid-template-columns: 1fr; 
+        }
+        .modal-dialog { 
+            margin: 1rem; 
+        }
+        .calendar-week-grid { 
+            grid-template-columns: 60px repeat(7, 1fr); 
+        }
+        .time-slot { 
+            font-size: 0.7rem; 
+            padding: 0.25rem; 
+        }
+        .week-event-item { 
+            font-size: 0.65rem; 
+        }
+        .calendar-nav {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .calendar-nav a {
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+        }
+        .view-toggle {
+            flex-direction: column;
+            align-items: center;
+        }
+        .view-btn {
+            width: 100%;
+            max-width: 200px;
+            justify-content: center;
+        }
+    }
+    
+    /* Visualização das views */
+    .calendar-view {
+        display: none;
+    }
+    
+    .calendar-view.active {
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="text-white">
+        <i class="bi bi-calendar4-week me-2" style="color: #FF6B35;"></i>Calendário Acadêmico
+    </h1>
+    <div class="btn-group">
+        <a href="{% url 'calendario:evento_criar' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i>Novo Evento
+        </a>
+        <a href="{% url 'calendario:eventos_lista' %}" class="btn btn-outline-light">
+            <i class="bi bi-list me-1"></i>Lista
+        </a>
+        <a href="{% url 'calendario:dashboard' %}" class="btn btn-outline-light">
+            <i class="bi bi-graph-up me-1"></i>Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- Estatísticas Rápidas -->
+<div class="stats-cards">
+    <div class="stat-card">
+        <i class="bi bi-calendar-day stat-icon"></i>
+        <div class="stat-number">{{ eventos_hoje|default:0 }}</div>
+        <div class="stat-label">Eventos Hoje</div>
+    </div>
+    <div class="stat-card">
+        <i class="bi bi-clock stat-icon"></i>
+        <div class="stat-number">{{ proximos_eventos|length|default:0 }}</div>
+        <div class="stat-label">Próximos Eventos</div>
+    </div>
+    <div class="stat-card">
+        <i class="bi bi-calendar-month stat-icon"></i>
+        <div class="stat-number">{{ current_month|default:1 }}</div>
+        <div class="stat-label">Mês Atual</div>
+    </div>
+</div>
+
+<!-- Calendário -->
+<div class="calendar-container">
+    <div class="calendar-header">
+        <h1><i class="bi bi-calendar4-week me-2"></i>{{ month_name|default:"Calendário" }} {{ current_year|default:"2025" }}</h1>
+        <div class="calendar-nav">
+            <a href="?month={{ prev_month|default:1 }}&year={{ prev_year|default:2025 }}&view={{ current_view|default:'monthly' }}">
+                <i class="bi bi-chevron-left me-2"></i>{{ prev_month_name|default:prev_month|default:"Anterior" }}/{{ prev_year|default:2025 }}
+            </a>
+            <span class="current-month">{{ month_name|default:"Calendário" }} {{ current_year|default:2025 }}</span>
+            <a href="?month={{ next_month|default:1 }}&year={{ next_year|default:2025 }}&view={{ current_view|default:'monthly' }}">
+                {{ next_month_name|default:next_month|default:"Próximo" }}/{{ next_year|default:2025 }}<i class="bi bi-chevron-right ms-2"></i>
+            </a>
+        </div>
+        
+        <!-- Botões de alternância de visualização -->
+        <div class="view-toggle">
+            <a href="?month={{ current_month|default:1 }}&year={{ current_year|default:2025 }}&view=monthly" 
+               class="view-btn {% if current_view == 'monthly' or current_view|default:'monthly' == 'monthly' %}active{% endif %}">
+                <i class="bi bi-calendar3 me-1"></i>Mensal
+            </a>
+            <a href="?month={{ current_month|default:1 }}&year={{ current_year|default:2025 }}&view=weekly" 
+               class="view-btn {% if current_view == 'weekly' %}active{% endif %}">
+                <i class="bi bi-calendar-week me-1"></i>Semanal
+            </a>
+        </div>
+    </div>
+    
+    <!-- Visualização Mensal -->
+    <div class="calendar-view {% if current_view == 'monthly' or not current_view %}active{% endif %}" id="monthlyView">
+        <div class="calendar-grid">
+            <!-- Cabeçalhos dos dias da semana -->
+            {% for weekday in weekdays %}
+                <div class="calendar-day-header">{{ weekday }}</div>
+            {% endfor %}
+            
+            <!-- Dias do mês -->
+            {% if month_days %}
+                {% for week in month_days %}
+                    {% for day in week %}
+                        <div class="calendar-day{% if day == today.day and current_month == today.month and current_year == today.year %} today{% endif %}{% if day == 0 %} other-month{% endif %}" 
+                             {% if day != 0 %}
+                             data-date="{{ current_year|default:2025 }}-{{ current_month|default:1|stringformat:'02d' }}-{{ day|stringformat:'02d' }}"
+                             data-day="{{ day }}"
+                             onclick="showDayModal(this)"
+                             ondblclick="editDay(this)"
+                             title="Clique para ver eventos | Duplo clique para criar evento"
+                             {% endif %}>
+                            {% if day != 0 %}
+                                <div class="day-number">{{ day }}</div>
+                                <div class="day-events">
+                                    {% for evento in eventos_por_dia|get_item:day %}
+                                        {% if evento.is_horario_fixo %}
+                                            <div class="event-item event-AULA" 
+                                                 title="{{ evento.titulo }} - {{ evento.data_inicio|time:'H:i' }} às {{ evento.data_fim|time:'H:i' }}{% if evento.local %} - {{ evento.local }}{% endif %}">
+                                                <i class="fas fa-book"></i> {{ evento.titulo|truncatechars:12 }}
+                                                {% if evento.local %}<br><small>{{ evento.local|truncatechars:8 }}</small>{% endif %}
+                                            </div>
+                                        {% else %}
+                                            <div class="event-item event-{{ evento.tipo_evento }}" 
+                                                 onclick="event.stopPropagation(); window.location.href='{% url 'calendario:evento_detalhe' evento.id %}'"
+                                                 title="{{ evento.titulo }} - {{ evento.data_inicio|time:'H:i' }}{% if evento.materia %} ({{ evento.materia.nome }}){% endif %}">
+                                                <i class="fas fa-{% if evento.tipo_evento == 'PROVA' %}clipboard-check{% elif evento.tipo_evento == 'TRABALHO' %}file-text{% elif evento.tipo_evento == 'AULA' %}chalkboard-teacher{% elif evento.tipo_evento == 'ESTUDO' %}book-open{% elif evento.tipo_evento == 'REUNIAO' %}users{% else %}calendar{% endif %}"></i>
+                                                {{ evento.titulo|truncatechars:8 }}
+                                                <br><small>{{ evento.data_inicio|time:'H:i' }}</small>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+            {% else %}
+                <!-- Fallback para quando não há dados do mês -->
+                {% for i in "1234567890123456789012345678901234567890123" %}
+                    {% if forloop.counter <= 42 %}
+                        <div class="calendar-day{% if forloop.counter == 15 %} today{% endif %}">
+                            <div class="day-number">{{ forloop.counter|add:"-7" }}</div>
+                            <div class="day-events"></div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Visualização Semanal -->
+    <div class="calendar-view {% if current_view == 'weekly' %}active{% endif %}" id="weeklyView">
+        <div class="calendar-week-grid">
+            <!-- Header dos horários e dias -->
+            <div class="week-time-header">Horário</div>
+            {% for weekday in weekdays %}
+                <div class="calendar-day-header">
+                    {{ weekday }}
+                    {% if week_dates %}
+                        <div class="small mt-1">{{ week_dates|get_item:forloop.counter0|date:"d/m" }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            
+            <!-- Grade de horários (7h às 22h) -->
+            {% for hora in horas_semana %}
+                <div class="time-slot">{{ hora }}:00</div>
+                {% for dia_index in "0123456"|make_list %}
+                    <div class="week-day-cell" 
+                         data-hour="{{ hora }}" 
+                         data-day="{{ dia_index }}"
+                         onclick="createEventAtTime({{ hora }}, {{ dia_index }})"
+                         title="Clique para criar evento às {{ hora }}:00">
+                        <div class="week-events">
+                            {% for evento in eventos_semana_por_hora|get_item:hora|get_item:dia_index %}
+                                {% if evento.is_horario_fixo %}
+                                    <div class="week-event-item event-AULA" 
+                                         title="{{ evento.titulo }} - {{ evento.data_inicio|time:'H:i' }} às {{ evento.data_fim|time:'H:i' }}{% if evento.local %} ({{ evento.local }}){% endif %}">
+                                        <i class="fas fa-book"></i> {{ evento.titulo|truncatechars:6 }}
+                                        {% if evento.local %}
+                                            <br><small>{{ evento.local|truncatechars:4 }}</small>
+                                        {% endif %}
+                                    </div>
+                                {% else %}
+                                    <div class="week-event-item event-{{ evento.tipo_evento }}" 
+                                         onclick="event.stopPropagation(); window.location.href='{% url 'calendario:evento_detalhe' evento.id %}'"
+                                         title="{{ evento.titulo }} - {{ evento.data_inicio|time:'H:i' }}{% if evento.materia %} ({{ evento.materia.nome }}){% endif %}">
+                                        <i class="fas fa-{% if evento.tipo_evento == 'PROVA' %}clipboard-check{% elif evento.tipo_evento == 'TRABALHO' %}file-text{% elif evento.tipo_evento == 'AULA' %}chalkboard-teacher{% elif evento.tipo_evento == 'ESTUDO' %}book-open{% elif evento.tipo_evento == 'REUNIAO' %}users{% else %}calendar{% endif %}"></i>
+                                        {{ evento.titulo|truncatechars:6 }}
+                                        {% if evento.materia %}
+                                            <br><small>{{ evento.materia.nome|truncatechars:4 }}</small>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Próximos Eventos -->
+{% if proximos_eventos %}
+<div class="upcoming-events">
+    <h4>
+        <i class="bi bi-clock me-2"></i>Próximos Eventos
+    </h4>
+    {% for evento in proximos_eventos %}
+        <div class="upcoming-event">
+            <div class="event-date">
+                <div style="font-size: 0.8rem;">{{ evento.data_inicio|date:"M" }}</div>
+                <div style="font-size: 1.2rem;">{{ evento.data_inicio|date:"d" }}</div>
+            </div>
+            <div class="event-info flex-grow-1">
+                <h6>{{ evento.titulo }}</h6>
+                <small>
+                    <i class="bi bi-clock me-1"></i>{{ evento.data_inicio|date:"d/m/Y H:i" }}
+                    {% if evento.materia %}
+                        | <i class="bi bi-journal me-1"></i>{{ evento.materia.nome }}
+                    {% endif %}
+                </small>
+            </div>
+            <div class="text-end">
+                <span class="badge" style="background: {{ evento.get_cor_evento }};">{{ evento.get_tipo_evento_display }}</span>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Botão Flutuante -->
+<button class="add-event-btn" onclick="window.location.href='{% url 'calendario:evento_criar' %}'">
+    <i class="bi bi-plus"></i>
+</button>
+
+<!-- Modal de Informações do Dia -->
+<div class="modal fade" id="dayModal" tabindex="-1" aria-labelledby="dayModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-white" id="dayModalLabel">
+                    <i class="bi bi-calendar-day me-2" style="color: #FF6B35;"></i>
+                    <span id="modalDayTitle">Detalhes do Dia</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-white">
+                <div id="modalEventsList">
+                    <!-- Eventos serão inseridos aqui -->
+                </div>
+                <div id="modalNoEvents" style="display: none;" class="text-center py-4">
+                    <i class="bi bi-calendar-x text-muted" style="font-size: 3rem;"></i>
+                    <p class="text-muted mt-2">Nenhum evento programado para este dia</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>Fechar
+                </button>
+                <button type="button" class="btn btn-primary" id="btnCreateEvent">
+                    <i class="bi bi-plus-circle me-1"></i>Criar Evento
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Calendário carregado com sucesso!');
+    
+    // Verificar se o Bootstrap está carregado
+    if (typeof bootstrap === 'undefined') {
+        console.warn('Bootstrap não encontrado, usando fallbacks');
+    }
+    
+    // Efeitos nos dias do calendário
+    const calendarDays = document.querySelectorAll('.calendar-day');
+    calendarDays.forEach(day => {
+        if (!day.classList.contains('other-month')) {
+            day.style.cursor = 'pointer';
+            day.addEventListener('mouseenter', function() { 
+                if (!this.style.transform.includes('translateY')) {
+                    this.style.transform = 'translateY(-3px)'; 
+                }
+            });
+            day.addEventListener('mouseleave', function() { 
+                this.style.transform = 'translateY(0)'; 
+            });
+        }
+    });
+
+    // Navegação por teclado
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowLeft' && e.ctrlKey) {
+            e.preventDefault();
+            const prevBtn = document.querySelector('a[href*="prev"]') || 
+                           document.querySelector('.calendar-nav a:first-child');
+            if (prevBtn) prevBtn.click();
+        } else if (e.key === 'ArrowRight' && e.ctrlKey) {
+            e.preventDefault();
+            const nextBtn = document.querySelector('a[href*="next"]') || 
+                           document.querySelector('.calendar-nav a:last-child');
+            if (nextBtn) nextBtn.click();
+        } else if (e.key === 'n' && e.ctrlKey) {
+            e.preventDefault();
+            window.location = "{% url 'calendario:evento_criar' %}";
+        }
+    });
+
+    // Animação de entrada para os cards
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+
+    // Configurar modal
+    const modalEl = document.getElementById('dayModal');
+    if (modalEl) {
+        // Garantir que o modal esteja no body
+        if (modalEl.parentElement !== document.body) {
+            document.body.appendChild(modalEl);
+        }
+        
+        // Criar instância do modal se Bootstrap estiver disponível
+        if (typeof bootstrap !== 'undefined') {
+            new bootstrap.Modal(modalEl, { 
+                backdrop: true, 
+                keyboard: true, 
+                focus: true 
+            });
+        }
+    }
+
+    // Clique em event-item não deve abrir o modal do dia
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.event-item')) {
+            e.stopPropagation();
+        }
+    });
+
+    // Fechar modal com ESC (fallback)
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('dayModal');
+            if (modal && typeof bootstrap !== 'undefined') {
+                const instance = bootstrap.Modal.getInstance(modal);
+                if (instance) instance.hide();
+            } else if (modal) {
+                modal.style.display = 'none';
+                document.body.classList.remove('modal-open');
+                // Remover backdrops
+                document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+            }
+        }
+    });
+
+    // Acessibilidade: foca o botão fechar ao abrir
+    if (modalEl) {
+        modalEl.addEventListener('shown.bs.modal', function() {
+            const closeBtn = this.querySelector('.btn-close');
+            if (closeBtn) closeBtn.focus();
+        });
+    }
+    
+    // Alternância de visualizações
+    const viewButtons = document.querySelectorAll('.view-btn');
+    const monthlyView = document.getElementById('monthlyView');
+    const weeklyView = document.getElementById('weeklyView');
+    
+    viewButtons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Atualizar botões ativos
+            viewButtons.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Alternar visualizações
+            if (this.textContent.trim().includes('Mensal')) {
+                if (monthlyView) monthlyView.classList.add('active');
+                if (weeklyView) weeklyView.classList.remove('active');
+            } else {
+                if (weeklyView) weeklyView.classList.add('active');
+                if (monthlyView) monthlyView.classList.remove('active');
+            }
+        });
+    });
+});
+
+// Variáveis para controlar cliques
+let clickCount = 0;
+let clickTimer = null;
+
+// Função para mostrar modal do dia
+function showDayModal(dayElement) {
+    if (!dayElement || dayElement.classList.contains('other-month')) {
+        return;
+    }
+    
+    clickCount++;
+    if (clickCount === 1) {
+        clickTimer = setTimeout(() => {
+            if (clickCount === 1) {
+                openDayModal(dayElement);
+            }
+            clickCount = 0;
+        }, 300); // janela para duplo clique
+    } else if (clickCount === 2) {
+        clearTimeout(clickTimer);
+        clickCount = 0;
+        editDay(dayElement);
+    }
+}
+
+// Abre o modal com dados do dia
+function openDayModal(dayElement) {
+    console.log('Abrindo modal para:', dayElement);
+    
+    // Limpar backdrops fantasmas
+    document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+    document.body.classList.remove('modal-open');
+    document.body.style.removeProperty('padding-right');
+
+    const date = dayElement.getAttribute('data-date') || 'Data não disponível';
+    const day = dayElement.getAttribute('data-day') || dayElement.querySelector('.day-number')?.textContent || 'Dia';
+    
+    // Título do modal
+    const modalTitle = `${day} de {{ month_name|default:"Mês" }} de {{ current_year|default:"2025" }}`;
+    const titleEl = document.getElementById('modalDayTitle');
+    if (titleEl) titleEl.textContent = modalTitle;
+
+    // Lista de eventos
+    const eventsList = document.getElementById('modalEventsList');
+    const noEvents = document.getElementById('modalNoEvents');
+    
+    if (eventsList) eventsList.innerHTML = '';
+    
+    const events = dayElement.querySelectorAll('.event-item');
+    
+    if (events.length > 0) {
+        if (noEvents) noEvents.style.display = 'none';
+        if (eventsList) eventsList.style.display = 'block';
+
+        events.forEach(evento => {
+            const eventCard = document.createElement('div');
+            eventCard.className = 'card mb-2';
+            eventCard.style.background = 'rgba(255, 255, 255, 0.05)';
+            eventCard.style.border = '1px solid rgba(255, 107, 53, 0.3)';
+
+            const title = evento.textContent.trim();
+            const type = evento.className.includes('event-AULA') ? 'AULA' :
+                        evento.className.includes('event-PROVA') ? 'PROVA' :
+                        evento.className.includes('event-TRABALHO') ? 'TRABALHO' :
+                        evento.className.includes('event-ESTUDO') ? 'ESTUDO' :
+                        evento.className.includes('event-REUNIAO') ? 'REUNIÃO' : 'OUTRO';
+            
+            const badgeColor = type === 'AULA' ? '#28a745' :
+                             type === 'PROVA' ? '#dc3545' :
+                             type === 'TRABALHO' ? '#ffc107' :
+                             type === 'ESTUDO' ? '#17a2b8' :
+                             type === 'REUNIÃO' ? '#9B59B6' : '#FF6B35';
+
+            eventCard.innerHTML = `
+                <div class="card-body py-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1 text-white">${title}</h6>
+                            <small class="text-muted">
+                                <i class="bi bi-clock me-1"></i>Horário: Ver detalhes
+                            </small>
+                        </div>
+                        <span class="badge" style="background-color: ${badgeColor};">${type}</span>
+                    </div>
+                </div>
+            `;
+            if (eventsList) eventsList.appendChild(eventCard);
+        });
+    } else {
+        if (eventsList) eventsList.style.display = 'none';
+        if (noEvents) noEvents.style.display = 'block';
+    }
+
+    // Botão criar evento
+    const createBtn = document.getElementById('btnCreateEvent');
+    if (createBtn) {
+        createBtn.onclick = () => {
+            const modal = document.getElementById('dayModal');
+            if (modal && typeof bootstrap !== 'undefined') {
+                const instance = bootstrap.Modal.getInstance(modal);
+                if (instance) instance.hide();
+            } else if (modal) {
+                modal.style.display = 'none';
+                document.body.classList.remove('modal-open');
+                document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+            }
+            
+            setTimeout(() => {
+                window.location.href = `{% url 'calendario:evento_criar' %}?date=${date}`;
+            }, 250);
+        };
+    }
+
+    // Mostrar modal
+    const modal = document.getElementById('dayModal');
+    if (modal) {
+        if (typeof bootstrap !== 'undefined') {
+            let instance = bootstrap.Modal.getInstance(modal);
+            if (!instance) {
+                instance = new bootstrap.Modal(modal, { 
+                    backdrop: true, 
+                    keyboard: true, 
+                    focus: true 
+                });
+            }
+            instance.show();
+        } else {
+            // Fallback sem Bootstrap
+            modal.style.display = 'block';
+            modal.classList.add('show');
+            document.body.classList.add('modal-open');
+            
+            // Criar backdrop
+            const backdrop = document.createElement('div');
+            backdrop.className = 'modal-backdrop fade show';
+            backdrop.onclick = () => {
+                modal.style.display = 'none';
+                modal.classList.remove('show');
+                document.body.classList.remove('modal-open');
+                backdrop.remove();
+            };
+            document.body.appendChild(backdrop);
+        }
+    }
+}
+
+// Duplo clique = criar/editar
+function editDay(dayElement) {
+    if (!dayElement || dayElement.classList.contains('other-month')) {
+        return;
+    }
+    
+    const date = dayElement.getAttribute('data-date');
+    const url = date ? 
+        `{% url 'calendario:evento_criar' %}?date=${date}` : 
+        `{% url 'calendario:evento_criar' %}`;
+    
+    window.location.href = url;
+}
+
+// Função para criar evento em horário específico (visualização semanal)
+function createEventAtTime(hora, diaIndex) {
+    console.log('Criando evento para hora:', hora, 'dia:', diaIndex);
+    
+    // Fallback para visualização mensal/geral
+    const today = new Date();
+    const year = {{ current_year|default:2025 }};
+    const month = String({{ current_month|default:1 }}).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const horaStr = String(hora).padStart(2, '0');
+    
+    const dateTimeString = `${year}-${month}-${day}T${horaStr}:00`;
+    window.location.href = `{% url 'calendario:evento_criar' %}?datetime=${dateTimeString}`;
+}
+</script>
+{% endblock %}

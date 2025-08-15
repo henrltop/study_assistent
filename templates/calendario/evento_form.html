@@ -1,0 +1,520 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo_pagina|default:"Evento" }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        background: var(--bs-dark);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        padding: 2rem;
+        margin: 2rem 0;
+        border: 1px solid var(--bs-gray-700);
+    }
+    
+    .form-header {
+        background: linear-gradient(135deg, var(--theme-primary) 0%, #FF8A33 100%);
+        color: white;
+        padding: 2rem;
+        margin: -2rem -2rem 2rem -2rem;
+        border-radius: 15px 15px 0 0;
+        text-align: center;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: white;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control, .form-select {
+        background: var(--bs-gray-800);
+        border: 2px solid var(--bs-gray-600);
+        color: white;
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        background: var(--bs-gray-800);
+        border-color: var(--theme-primary);
+        color: white;
+        box-shadow: 0 0 0 0.2rem rgba(255, 122, 0, 0.25);
+    }
+    
+    .form-control::placeholder {
+        color: var(--bs-gray-400);
+    }
+    
+    .btn-calendar {
+        background: var(--theme-primary);
+        border: none;
+        color: white;
+        border-radius: 25px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+    
+    .btn-calendar:hover {
+        background: #e6691a;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 122, 0, 0.3);
+    }
+    
+    .btn-secondary-custom {
+        background: #6c757d;
+        border: none;
+        color: white;
+        border-radius: 25px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+    
+    .btn-secondary-custom:hover {
+        background: #5a6268;
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .recorrencia-section {
+        background: linear-gradient(135deg, #2c2c2c 0%, #1e1e1e 100%);
+        border: 2px solid #FF6B35;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-top: 2rem;
+    }
+    
+    .color-palette {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+    
+    .color-option {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 3px solid transparent;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .color-option:hover {
+        transform: scale(1.1);
+        border-color: white;
+    }
+    
+    .color-option.selected {
+        border-color: #FFD700;
+        box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
+    
+    .color-option::after {
+        content: '✓';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-weight: bold;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .color-option.selected::after {
+        opacity: 1;
+    }
+    
+    .alert-info-custom {
+        background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+        border: none;
+        border-radius: 10px;
+        color: #0c5460;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="form-container">
+                <div class="form-header">
+                    <h2 class="mb-0">
+                        <i class="fas fa-calendar-plus me-2"></i>
+                        {{ titulo_pagina|default:"Novo Evento" }}
+                    </h2>
+                    <p class="mb-0 mt-2 opacity-75">
+                        Organize suas atividades acadêmicas
+                    </p>
+                </div>
+                
+                <form method="post" id="eventoForm">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="form-label" for="{{ form.titulo.id_for_label }}">
+                                    <i class="fas fa-heading me-1"></i>
+                                    {{ form.titulo.label }}
+                                </label>
+                                {{ form.titulo }}
+                                {% if form.titulo.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ form.titulo.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="{{ form.data_inicio.id_for_label }}">
+                                    <i class="fas fa-play me-1"></i>
+                                    {{ form.data_inicio.label }}
+                                </label>
+                                {{ form.data_inicio }}
+                                {% if form.data_inicio.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ form.data_inicio.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="{{ form.data_fim.id_for_label }}">
+                                    <i class="fas fa-stop me-1"></i>
+                                    {{ form.data_fim.label }}
+                                </label>
+                                {{ form.data_fim }}
+                                {% if form.data_fim.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ form.data_fim.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="{{ form.tipo_evento.id_for_label }}">
+                                    <i class="fas fa-tag me-1"></i>
+                                    {{ form.tipo_evento.label }}
+                                </label>
+                                {{ form.tipo_evento }}
+                                <span class="tipo-evento-preview" id="tipoPreview"></span>
+                                {% if form.tipo_evento.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ form.tipo_evento.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="{{ form.materia.id_for_label }}">
+                                    <i class="fas fa-book me-1"></i>
+                                    {{ form.materia.label }}
+                                </label>
+                                {{ form.materia }}
+                                {% if form.materia.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ form.materia.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.descricao.id_for_label }}">
+                            <i class="fas fa-align-left me-1"></i>
+                            {{ form.descricao.label }}
+                        </label>
+                        {{ form.descricao }}
+                        {% if form.descricao.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.descricao.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="{{ form.cor_personalizada.id_for_label }}">
+                                    <i class="fas fa-palette me-1"></i>
+                                    Cor do Evento
+                                </label>
+                                <div class="color-palette">
+                                    <div class="color-option" data-color="#DC3545" style="background: #DC3545;" title="Vermelho - Provas/Urgente"></div>
+                                    <div class="color-option" data-color="#28A745" style="background: #28A745;" title="Verde - Aulas/Estudos"></div>
+                                    <div class="color-option" data-color="#FFC107" style="background: #FFC107;" title="Amarelo - Trabalhos"></div>
+                                    <div class="color-option" data-color="#007BFF" style="background: #007BFF;" title="Azul - Reuniões"></div>
+                                    <div class="color-option" data-color="#6F42C1" style="background: #6F42C1;" title="Roxo - Atividades"></div>
+                                    <div class="color-option" data-color="#FF7A00" style="background: #FF7A00;" title="Laranja - Outros"></div>
+                                </div>
+                                {{ form.cor_personalizada }}
+                                <div class="d-flex align-items-center mt-2">
+                                    <div class="color-preview" id="colorPreview"></div>
+                                    <small class="text-muted ms-2">Cor selecionada</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <div class="form-check mt-4">
+                                    {{ form.lembrete }}
+                                    <label class="form-check-label" for="{{ form.lembrete.id_for_label }}">
+                                        <i class="fas fa-bell me-1"></i>
+                                        {{ form.lembrete.label }}
+                                    </label>
+                                </div>
+                                
+                                <div class="mt-2" id="lembreteConfig" style="display: none;">
+                                    <label class="form-label" for="{{ form.tempo_lembrete.id_for_label }}">
+                                        {{ form.tempo_lembrete.label }}
+                                    </label>
+                                    {{ form.tempo_lembrete }}
+                                    {% if form.tempo_lembrete.help_text %}
+                                        <div class="form-text">{{ form.tempo_lembrete.help_text }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if not evento %}
+                    <!-- Seção de Recorrência (apenas para novos eventos) -->
+                    <div class="recorrencia-section">
+                        <h5 class="mb-3 text-white">
+                            <i class="fas fa-repeat me-2" style="color: #FF6B35;"></i>
+                            Recorrência (Opcional)
+                        </h5>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="temRecorrencia" name="tem_recorrencia">
+                            <label class="form-check-label text-white" for="temRecorrencia">
+                                Este evento se repete
+                            </label>
+                        </div>
+                        
+                        <div id="recorrenciaFields" style="display: none;">
+                            <div class="alert" style="background: rgba(13, 202, 240, 0.15); border: 1px solid #0DCAF0; color: #0DCAF0;">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Configure como este evento deve se repetir no seu calendário.
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label text-white">Tipo de Recorrência</label>
+                                        <select class="form-select" name="tipo_recorrencia">
+                                            <option value="">Selecione...</option>
+                                            <option value="diario">Diariamente</option>
+                                            <option value="semanal">Semanalmente</option>
+                                            <option value="mensal">Mensalmente</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label text-white">Intervalo</label>
+                                        <input type="number" class="form-control" name="intervalo" min="1" max="12" value="1" placeholder="A cada...">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label text-white">Data Final (Opcional)</label>
+                                        <input type="date" class="form-control" name="data_fim_recorrencia">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Botões de Ação -->
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'calendario:calendario_home' %}" class="btn btn-secondary-custom">
+                            <i class="fas fa-arrow-left me-1"></i>
+                            Voltar
+                        </a>
+                        
+                        <button type="submit" class="btn btn-calendar">
+                            <i class="fas fa-save me-1"></i>
+                            {{ evento|yesno:"Atualizar Evento,Criar Evento" }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('eventoForm');
+    const tipoEventoSelect = document.getElementById('{{ form.tipo_evento.id_for_label }}');
+    const corInput = document.getElementById('{{ form.cor_personalizada.id_for_label }}');
+    const colorPreview = document.getElementById('colorPreview');
+    const tipoPreview = document.getElementById('tipoPreview');
+    const lembreteCheck = document.getElementById('{{ form.lembrete.id_for_label }}');
+    const lembreteConfig = document.getElementById('lembreteConfig');
+    const temRecorrencia = document.getElementById('temRecorrencia');
+    const recorrenciaFields = document.getElementById('recorrenciaFields');
+    
+    // Debug: verificar se data foi pré-preenchida
+    const dataInicio = document.getElementById('{{ form.data_inicio.id_for_label }}');
+    const dataFim = document.getElementById('{{ form.data_fim.id_for_label }}');
+    
+    console.log('🗓️ Valores de data carregados:');
+    console.log('Data início:', dataInicio?.value);
+    console.log('Data fim:', dataFim?.value);
+    console.log('URL params:', window.location.search);
+    
+    // Cores dos tipos de evento
+    const coresTipos = {
+        'prova': '#DC3545',
+        'aula': '#28A745',
+        'trabalho': '#FFC107',
+        'estudo': '#007BFF',
+        'reuniao': '#6F42C1',
+        'outro': '#FF7A00'
+    };
+    
+    // Sistema de cores predefinidas
+    const colorOptions = document.querySelectorAll('.color-option');
+    const corInput = document.getElementById('{{ form.cor_personalizada.id_for_label }}');
+    
+    colorOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            const cor = this.dataset.color;
+            corInput.value = cor;
+            updateColorPreview();
+            
+            // Atualizar seleção visual
+            colorOptions.forEach(opt => opt.classList.remove('selected'));
+            this.classList.add('selected');
+        });
+    });
+    
+    // Definir cor inicial baseada no tipo de evento
+    function setInitialColor() {
+        if (tipoEventoSelect && tipoEventoSelect.value) {
+            const cor = coresTipos[tipoEventoSelect.value] || '#FF7A00';
+            corInput.value = cor;
+            updateColorPreview();
+            
+            // Marcar a cor correspondente
+            colorOptions.forEach(opt => {
+                opt.classList.remove('selected');
+                if (opt.dataset.color === cor) {
+                    opt.classList.add('selected');
+                }
+            });
+        }
+    }
+    
+    // Atualizar preview da cor
+    function updateColorPreview() {
+        const cor = corInput.value || coresTipos[tipoEventoSelect.value] || '#FF7A00';
+        colorPreview.style.backgroundColor = cor;
+    }
+    
+    // Atualizar preview do tipo
+    function updateTipoPreview() {
+        const selectedOption = tipoEventoSelect.options[tipoEventoSelect.selectedIndex];
+        const tipo = tipoEventoSelect.value;
+        const cor = coresTipos[tipo] || '#FF7A00';
+        
+        if (selectedOption.text !== '---------') {
+            tipoPreview.textContent = selectedOption.text;
+            tipoPreview.style.backgroundColor = cor;
+            tipoPreview.style.color = tipo === 'trabalho' ? '#000' : '#fff';
+            tipoPreview.style.display = 'inline-block';
+        } else {
+            tipoPreview.style.display = 'none';
+        }
+    }
+    
+    // Event listeners
+    if (corInput) {
+        corInput.addEventListener('input', updateColorPreview);
+    }
+    
+    if (tipoEventoSelect) {
+        tipoEventoSelect.addEventListener('change', function() {
+            updateTipoPreview();
+            setInitialColor();
+        });
+        updateTipoPreview();
+        setInitialColor();
+    }
+    
+    if (lembreteCheck) {
+        lembreteCheck.addEventListener('change', function() {
+            lembreteConfig.style.display = this.checked ? 'block' : 'none';
+        });
+        
+        // Estado inicial
+        if (lembreteCheck.checked) {
+            lembreteConfig.style.display = 'block';
+        }
+    }
+    
+    if (temRecorrencia) {
+        temRecorrencia.addEventListener('change', function() {
+            recorrenciaFields.style.display = this.checked ? 'block' : 'none';
+        });
+    }
+    
+    // Validação do formulário
+    form.addEventListener('submit', function(e) {
+        const dataInicio = new Date(document.getElementById('{{ form.data_inicio.id_for_label }}').value);
+        const dataFim = new Date(document.getElementById('{{ form.data_fim.id_for_label }}').value);
+        
+        if (dataFim <= dataInicio) {
+            e.preventDefault();
+            alert('A data de término deve ser posterior à data de início.');
+            return false;
+        }
+        
+        // Validar duração máxima (12 horas)
+        const duracao = (dataFim - dataInicio) / (1000 * 60 * 60); // em horas
+        if (duracao > 12) {
+            e.preventDefault();
+            alert('O evento não pode durar mais de 12 horas.');
+            return false;
+        }
+    });
+});
+</script>
+{% endblock %}

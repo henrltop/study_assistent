@@ -1,0 +1,367 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.form-section {
+    background: var(--theme-bg-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--theme-border-radius);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.form-section h4 {
+    color: var(--theme-primary);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-group-custom {
+    gap: 0.5rem;
+}
+
+.tipo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--theme-border-radius-sm);
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-right: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.tipo-prova {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--theme-danger);
+}
+
+.tipo-trabalho {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--theme-warning);
+}
+
+.tipo-aula {
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--theme-info);
+}
+
+.tipo-atividade {
+    background: rgba(34, 197, 94, 0.15);
+    color: var(--theme-success);
+}
+
+.tipo-outro {
+    background: rgba(255, 122, 0, 0.15);
+    color: var(--theme-primary);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-calendar-event me-2"></i>
+                {{ titulo_pagina }}
+            </h1>
+            {% if evento %}
+            <p class="text-muted mb-0">Editando evento: {{ evento.titulo }}</p>
+            {% else %}
+            <p class="text-muted mb-0">Cadastre um novo evento</p>
+            {% endif %}
+        </div>
+        <div class="d-flex gap-2">
+            {% if evento.materia %}
+                <a href="{% url 'academico:materia_detail' evento.materia.slug %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>
+                    Voltar à Matéria
+                </a>
+            {% else %}
+                <a href="{% url 'academico:agenda_geral' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>
+                    Voltar à Agenda
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Formulário Principal -->
+            <div class="form-section">
+                <h4>
+                    <i class="bi bi-info-circle"></i>
+                    Informações do Evento
+                </h4>
+                
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label for="{{ form.titulo.id_for_label }}" class="form-label">
+                                {{ form.titulo.label }}
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.titulo }}
+                            {% if form.titulo.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.titulo.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="{{ form.tipo.id_for_label }}" class="form-label">
+                                {{ form.tipo.label }}
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.tipo }}
+                            {% if form.tipo.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.tipo.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.descricao.id_for_label }}" class="form-label">
+                            {{ form.descricao.label }}
+                        </label>
+                        {{ form.descricao }}
+                        {% if form.descricao.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.descricao.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        {% if form.descricao.help_text %}
+                            <div class="form-text">{{ form.descricao.help_text }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.data_inicio.id_for_label }}" class="form-label">
+                                {{ form.data_inicio.label }}
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.data_inicio }}
+                            {% if form.data_inicio.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.data_inicio.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.data_fim.id_for_label }}" class="form-label">
+                                {{ form.data_fim.label }}
+                            </label>
+                            {{ form.data_fim }}
+                            {% if form.data_fim.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.data_fim.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {% if form.data_fim.help_text %}
+                                <div class="form-text">{{ form.data_fim.help_text }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Erros gerais do formulário -->
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Botões de ação -->
+                    <div class="d-flex btn-group-custom justify-content-end">
+                        {% if evento.materia %}
+                            <a href="{% url 'academico:materia_detail' evento.materia.slug %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-1"></i>
+                                Cancelar
+                            </a>
+                        {% else %}
+                            <a href="{% url 'academico:agenda_geral' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-1"></i>
+                                Cancelar
+                            </a>
+                        {% endif %}
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-1"></i>
+                            {% if evento %}Atualizar Evento{% else %}Criar Evento{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Tipos de Evento -->
+            <div class="form-section">
+                <h4>
+                    <i class="bi bi-tag"></i>
+                    Tipos de Evento
+                </h4>
+                
+                <p class="text-muted mb-3">Escolha o tipo que melhor descreve seu evento:</p>
+                
+                <div class="d-flex flex-wrap">
+                    <span class="tipo-badge tipo-prova">
+                        <i class="bi bi-clipboard-check"></i>
+                        Prova
+                    </span>
+                    <span class="tipo-badge tipo-trabalho">
+                        <i class="bi bi-file-earmark-text"></i>
+                        Trabalho
+                    </span>
+                    <span class="tipo-badge tipo-aula">
+                        <i class="bi bi-book"></i>
+                        Aula
+                    </span>
+                    <span class="tipo-badge tipo-atividade">
+                        <i class="bi bi-pencil-square"></i>
+                        Atividade
+                    </span>
+                    <span class="tipo-badge tipo-outro">
+                        <i class="bi bi-calendar-event"></i>
+                        Outro
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Dicas -->
+            <div class="form-section">
+                <h4>
+                    <i class="bi bi-lightbulb"></i>
+                    Dicas
+                </h4>
+                
+                <div class="alert alert-info border-0" style="background: var(--theme-info); color: white;">
+                    <h6 class="alert-heading">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Sobre os eventos:
+                    </h6>
+                    <ul class="mb-0 ps-3">
+                        <li>Use um título claro e descritivo</li>
+                        <li>A data de término é opcional</li>
+                        <li>Eventos de prova e trabalho aparecem em destaque</li>
+                    </ul>
+                </div>
+                
+                {% if materia %}
+                <div class="alert alert-primary border-0" style="background: var(--theme-primary); color: white;">
+                    <h6 class="alert-heading">
+                        <i class="bi bi-mortarboard me-1"></i>
+                        Matéria:
+                    </h6>
+                    <p class="mb-0">
+                        Este evento será vinculado à matéria <strong>{{ materia.nome }}</strong>.
+                    </p>
+                </div>
+                {% else %}
+                <div class="alert alert-warning border-0" style="background: var(--theme-warning); color: white;">
+                    <h6 class="alert-heading">
+                        <i class="bi bi-globe me-1"></i>
+                        Evento Geral:
+                    </h6>
+                    <p class="mb-0">
+                        Este será um evento geral, visível em toda a agenda.
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-focus no primeiro campo do formulário
+    const firstField = document.querySelector('form input[type="text"]');
+    if (firstField) {
+        firstField.focus();
+    }
+    
+    // Configurar datetime-local com valores padrão
+    const dataInicio = document.getElementById('{{ form.data_inicio.id_for_label }}');
+    const dataFim = document.getElementById('{{ form.data_fim.id_for_label }}');
+    
+    // Se não há valor, definir para próxima hora
+    if (dataInicio && !dataInicio.value) {
+        const agora = new Date();
+        agora.setMinutes(0, 0, 0); // Arredondar para a hora
+        agora.setHours(agora.getHours() + 1); // Próxima hora
+        dataInicio.value = agora.toISOString().slice(0, 16);
+    }
+    
+    // Quando data de início muda, ajustar data de fim
+    if (dataInicio) {
+        dataInicio.addEventListener('change', function() {
+            if (dataFim && !dataFim.value) {
+                const inicio = new Date(this.value);
+                inicio.setHours(inicio.getHours() + 1); // 1 hora depois
+                dataFim.value = inicio.toISOString().slice(0, 16);
+            }
+        });
+    }
+    
+    // Validação em tempo real
+    const form = document.querySelector('form');
+    const inputs = form.querySelectorAll('input, textarea, select');
+    
+    inputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            // Remove classes de erro/sucesso anteriores
+            this.classList.remove('is-valid', 'is-invalid');
+            
+            // Validação básica
+            if (this.required && !this.value.trim()) {
+                this.classList.add('is-invalid');
+            } else if (this.value.trim()) {
+                this.classList.add('is-valid');
+            }
+        });
+    });
+    
+    // Animação de fade-in para os cards
+    const cards = document.querySelectorAll('.form-section');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.4s ease-out';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,324 @@
+/* Estilos customizados para o Assistente de Estudos */
+
+/* ===== Z-INDEX FIX ===== */
+/* Corrigir z-index dos dropdowns da navbar */
+.navbar .dropdown-menu {
+    z-index: 1050 !important;
+}
+
+.navbar-nav .dropdown:hover .dropdown-menu,
+.navbar-nav .dropdown.show .dropdown-menu {
+    z-index: 1050 !important;
+}
+
+/* Garantir que a navbar tenha z-index adequado */
+.navbar {
+    z-index: 1040 !important;
+    position: relative;
+}
+
+/* Corrigir para todos os elementos Bootstrap com z-index */
+.dropdown-menu {
+    z-index: 1050 !important;
+}
+
+/* Corrigir overlay de modais e outros elementos */
+.modal {
+    z-index: 1055 !important;
+}
+
+.modal-backdrop {
+    z-index: 1050 !important;
+}
+
+/* Garantir que os cards e conteúdo da página tenham z-index menor */
+.card, .container, .container-fluid {
+    position: relative;
+    z-index: 1;
+}
+
+/* Forçar dropdown a sempre aparecer na frente */
+.navbar-nav .dropdown-menu.show {
+    z-index: 1050 !important;
+    position: absolute !important;
+}
+
+/* Fix específico para Bootstrap 5 dropdowns */
+.dropdown-toggle::after {
+    margin-left: 0.255em;
+}
+
+.dropdown-menu[data-bs-popper] {
+    z-index: 1050 !important;
+}
+
+/* ===== VARIÁVEIS CSS ===== */
+:root {
+    --primary-color: #0d6efd;
+    --success-color: #198754;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --info-color: #0dcaf0;
+    --light-color: #f8f9fa;
+    --dark-color: #212529;
+}
+
+/* Layout geral */
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Navbar customizada */
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+/* Melhorar alinhamento dos links da navbar */
+.navbar-nav .nav-link {
+    display: flex !important;
+    align-items: center !important;
+    padding: 0.5rem 1rem !important;
+    transition: all 0.2s ease-in-out;
+}
+
+.navbar-nav .nav-link i {
+    margin-right: 0.5rem;
+    font-size: 1rem;
+    min-width: 16px;
+    text-align: center;
+}
+
+.navbar-nav .nav-link span {
+    font-size: 0.95rem;
+    line-height: 1;
+}
+
+.dropdown-item {
+    display: flex !important;
+    align-items: center !important;
+    padding: 0.5rem 1rem !important;
+}
+
+.dropdown-item i {
+    margin-right: 0.5rem;
+    font-size: 0.9rem;
+    min-width: 16px;
+    text-align: center;
+}
+
+.dropdown-item span {
+    line-height: 1;
+}
+
+/* Cards com sombra suave */
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.08);
+    transition: box-shadow 0.15s ease-in-out;
+}
+
+.card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+}
+
+/* Cards com gradiente para hero sections */
+.bg-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+/* Badges customizadas */
+.badge {
+    font-size: 0.75em;
+    padding: 0.5em 0.75em;
+}
+
+/* Buttons com transições suaves */
+.btn {
+    transition: all 0.15s ease-in-out;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Tabs customizadas */
+.nav-tabs .nav-link {
+    border: none;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.nav-tabs .nav-link.active {
+    background-color: #fff;
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+}
+
+/* Cards com borda colorida */
+.border-start {
+    border-left-width: 4px !important;
+}
+
+/* Alertas customizados */
+.alert {
+    border: none;
+    border-radius: 8px;
+}
+
+.alert-dismissible .btn-close {
+    padding: 1rem;
+}
+
+/* Breadcrumbs */
+.breadcrumb {
+    background-color: transparent;
+    padding: 0;
+    margin-bottom: 1rem;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "›";
+    font-weight: bold;
+    color: #6c757d;
+}
+
+/* Footer */
+footer {
+    margin-top: auto;
+}
+
+/* Inputs e forms */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Cards de estatísticas */
+.card-body .display-6,
+.card-body .display-4 {
+    font-weight: 700;
+}
+
+/* Animações sutis */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .display-6 {
+        font-size: 2rem;
+    }
+    
+    .display-4 {
+        font-size: 2.5rem;
+    }
+    
+    .navbar-brand {
+        font-size: 1.25rem;
+    }
+}
+
+/* Estados de loading */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Melhorias para acessibilidade */
+.btn:focus,
+.form-control:focus,
+.nav-link:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Cards de matérias */
+.materia-card {
+    transition: all 0.2s ease-in-out;
+}
+
+.materia-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+}
+
+/* Status de tarefas */
+.tarefa-atrasada {
+    background-color: rgba(220, 53, 69, 0.1);
+    border-left-color: var(--danger-color) !important;
+}
+
+.tarefa-urgente {
+    background-color: rgba(255, 193, 7, 0.1);
+    border-left-color: var(--warning-color) !important;
+}
+
+.tarefa-concluida {
+    background-color: rgba(25, 135, 84, 0.1);
+    border-left-color: var(--success-color) !important;
+    opacity: 0.7;
+}
+
+/* Ícones grandes */
+.display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
+    line-height: 1.2;
+}
+
+/* Scrollbar customizada (webkit) */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Utilitários */
+.text-gradient {
+    background: linear-gradient(45deg, var(--primary-color), var(--info-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.shadow-soft {
+    box-shadow: 0 2px 25px rgba(0,0,0,0.1) !important;
+}
+
+/* Print styles */
+@media print {
+    .navbar,
+    .btn,
+    .alert,
+    footer {
+        display: none !important;
+    }
+    
+    .container {
+        max-width: none !important;
+        width: 100% !important;
+    }
+    
+    .card {
+        border: 1px solid #dee2e6 !important;
+        box-shadow: none !important;
+    }
+}

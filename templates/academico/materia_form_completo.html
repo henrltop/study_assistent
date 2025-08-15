@@ -1,0 +1,466 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.form-section {
+    background: var(--theme-bg-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--theme-border-radius);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.form-section h4 {
+    color: var(--theme-primary);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.horario-formset {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    border: 2px solid #FF6B35;
+    border-radius: 15px;
+    padding: 2rem;
+    margin-top: 2rem;
+}
+
+.horario-form {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 107, 53, 0.3);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.horario-form:last-child {
+    margin-bottom: 0;
+}
+
+.horario-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 107, 53, 0.2);
+}
+
+.horario-number {
+    background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.delete-horario {
+    color: #dc3545;
+    text-decoration: none;
+    font-size: 0.9rem;
+    padding: 0.3rem 0.8rem;
+    border: 1px solid #dc3545;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.delete-horario:hover {
+    background: #dc3545;
+    color: white;
+}
+
+.time-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.btn-add-horario {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 10px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.btn-add-horario:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(40, 167, 69, 0.3);
+}
+
+.btn-group-custom {
+    gap: 0.5rem;
+}
+
+.required-field::after {
+    content: " *";
+    color: #dc3545;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .time-inputs {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-section {
+        padding: 1.5rem;
+    }
+    
+    .horario-formset {
+        padding: 1.5rem;
+    }
+}
+
+/* Animações */
+.form-section {
+    animation: slideIn 0.6s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-mortarboard me-2"></i>
+                {{ titulo_pagina }}
+            </h1>
+            {% if materia %}
+            <p class="text-muted mb-0">Editando matéria: {{ materia.nome }}</p>
+            {% else %}
+            <p class="text-muted mb-0">Cadastre uma nova matéria/disciplina com horários</p>
+            {% endif %}
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'academico:materias_lista' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>
+                Voltar à Lista
+            </a>
+        </div>
+    </div>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+        
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Informações Básicas da Matéria -->
+                <div class="form-section">
+                    <h4>
+                        <i class="bi bi-info-circle"></i>
+                        Informações da Matéria
+                    </h4>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.semestre.id_for_label }}" class="form-label required-field">
+                                {{ form.semestre.label }}
+                            </label>
+                            {{ form.semestre }}
+                            {% if form.semestre.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.semestre.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.nome.id_for_label }}" class="form-label required-field">
+                                {{ form.nome.label }}
+                            </label>
+                            {{ form.nome }}
+                            {% if form.nome.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.nome.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.descricao.id_for_label }}" class="form-label">
+                            {{ form.descricao.label }}
+                        </label>
+                        {{ form.descricao }}
+                        {% if form.descricao.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.descricao.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Horários das Aulas -->
+                <div class="horario-formset">
+                    <h4 class="text-white mb-3">
+                        <i class="bi bi-clock me-2" style="color: #FF6B35;"></i>
+                        Horários das Aulas
+                    </h4>
+                    <p class="text-muted mb-4">
+                        Configure os dias da semana e horários em que esta matéria tem aula. 
+                        Estes horários aparecerão automaticamente no calendário.
+                    </p>
+
+                    {{ horarios_formset.management_form }}
+                    
+                    <div id="horarios-container">
+                        {% for horario_form in horarios_formset %}
+                            <div class="horario-form" data-form-index="{{ forloop.counter0 }}">
+                                <div class="horario-header">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="horario-number">{{ forloop.counter }}</div>
+                                        <span class="text-white fw-bold">Horário {{ forloop.counter }}</span>
+                                    </div>
+                                    {% if not is_create %}
+                                        <div>
+                                            {{ horario_form.DELETE }}
+                                            {% if horario_form.DELETE %}
+                                                <label for="{{ horario_form.DELETE.id_for_label }}" class="delete-horario">
+                                                    <i class="bi bi-trash me-1"></i>Excluir
+                                                </label>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                {% for hidden in horario_form.hidden_fields %}
+                                    {{ hidden }}
+                                {% endfor %}
+
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label text-white required-field">
+                                            <i class="bi bi-calendar-day me-1"></i>
+                                            {{ horario_form.dia_semana.label }}
+                                        </label>
+                                        {{ horario_form.dia_semana }}
+                                        {% if horario_form.dia_semana.errors %}
+                                            <div class="text-danger small">
+                                                {% for error in horario_form.dia_semana.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-8">
+                                        <div class="time-inputs">
+                                            <div class="mb-3">
+                                                <label class="form-label text-white required-field">
+                                                    <i class="bi bi-clock me-1"></i>
+                                                    {{ horario_form.hora_inicio.label }}
+                                                </label>
+                                                {{ horario_form.hora_inicio }}
+                                                {% if horario_form.hora_inicio.errors %}
+                                                    <div class="text-danger small">
+                                                        {% for error in horario_form.hora_inicio.errors %}
+                                                            {{ error }}
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label text-white required-field">
+                                                    <i class="bi bi-clock me-1"></i>
+                                                    {{ horario_form.hora_fim.label }}
+                                                </label>
+                                                {{ horario_form.hora_fim }}
+                                                {% if horario_form.hora_fim.errors %}
+                                                    <div class="text-danger small">
+                                                        {% for error in horario_form.hora_fim.errors %}
+                                                            {{ error }}
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label text-white">
+                                            <i class="bi bi-geo-alt me-1"></i>
+                                            {{ horario_form.local.label }}
+                                        </label>
+                                        {{ horario_form.local }}
+                                        {% if horario_form.local.errors %}
+                                            <div class="text-danger small">
+                                                {% for error in horario_form.local.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label text-white">
+                                            <i class="bi bi-sticky-note me-1"></i>
+                                            {{ horario_form.observacoes.label }}
+                                        </label>
+                                        {{ horario_form.observacoes }}
+                                        {% if horario_form.observacoes.errors %}
+                                            <div class="text-danger small">
+                                                {% for error in horario_form.observacoes.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <button type="button" id="add-horario" class="btn-add-horario">
+                        <i class="bi bi-plus-circle"></i>
+                        Adicionar Horário
+                    </button>
+                </div>
+
+                <!-- Botões de Ação -->
+                <div class="d-flex btn-group-custom justify-content-end">
+                    <a href="{% url 'academico:materias_lista' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle me-1"></i>
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-1"></i>
+                        {% if materia %}Atualizar Matéria{% else %}Criar Matéria{% endif %}
+                    </button>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <!-- Dicas -->
+                <div class="form-section">
+                    <h4>
+                        <i class="bi bi-lightbulb"></i>
+                        Dicas
+                    </h4>
+                    
+                    <div class="alert alert-info border-0" style="background: var(--theme-info); color: white;">
+                        <h6 class="alert-heading">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Sobre os horários:
+                        </h6>
+                        <ul class="mb-0 ps-3">
+                            <li>Configure todos os dias e horários de aula</li>
+                            <li>Os horários aparecerão automaticamente no calendário</li>
+                            <li>Você pode adicionar quantos horários precisar</li>
+                            <li>Use o campo "Local" para especificar salas</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Funcionalidade para adicionar novos horários
+    const addButton = document.getElementById('add-horario');
+    const container = document.getElementById('horarios-container');
+    const totalForms = document.getElementById('id_horarios_aula-TOTAL_FORMS');
+    let formIndex = parseInt(totalForms.value);
+
+    addButton.addEventListener('click', function() {
+        // Clonar o último formulário
+        const lastForm = container.querySelector('.horario-form:last-child');
+        const newForm = lastForm.cloneNode(true);
+        
+        // Atualizar indices do formulário
+        const regex = /horarios_aula-\d+-/g;
+        newForm.innerHTML = newForm.innerHTML.replace(regex, `horarios_aula-${formIndex}-`);
+        
+        // Limpar valores dos campos
+        newForm.querySelectorAll('input, select, textarea').forEach(field => {
+            if (field.type !== 'hidden') {
+                field.value = '';
+            }
+        });
+        
+        // Atualizar o número do horário
+        const numberElement = newForm.querySelector('.horario-number');
+        const headerElement = newForm.querySelector('.horario-header span');
+        numberElement.textContent = formIndex + 1;
+        headerElement.textContent = `Horário ${formIndex + 1}`;
+        
+        // Atualizar o data-form-index
+        newForm.setAttribute('data-form-index', formIndex);
+        
+        // Adicionar ao container
+        container.appendChild(newForm);
+        
+        // Atualizar contador
+        formIndex++;
+        totalForms.value = formIndex;
+    });
+
+    // Validação em tempo real para horários
+    document.addEventListener('change', function(e) {
+        if (e.target.type === 'time') {
+            const form = e.target.closest('.horario-form');
+            const horaInicio = form.querySelector('[name$="-hora_inicio"]');
+            const horaFim = form.querySelector('[name$="-hora_fim"]');
+            
+            if (horaInicio.value && horaFim.value) {
+                if (horaInicio.value >= horaFim.value) {
+                    horaFim.setCustomValidity('A hora de fim deve ser posterior à hora de início');
+                    horaFim.reportValidity();
+                } else {
+                    horaFim.setCustomValidity('');
+                }
+            }
+        }
+    });
+
+    // Auto-focus no primeiro campo
+    const firstField = document.querySelector('form input[type="text"], form select');
+    if (firstField) {
+        firstField.focus();
+    }
+});
+</script>
+{% endblock %}

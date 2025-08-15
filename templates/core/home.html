@@ -1,0 +1,312 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo_pagina }} - Bem-vindo!{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card hero-card text-white-force">
+            <div class="card-body py-5">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="display-5 fw-bold mb-3 text-white-force">
+                            <i class="bi bi-mortarboard me-3 text-primary"></i>Assistente de Estudos
+                        </h1>
+                        <p class="lead mb-4 text-white-force" style="color: var(--theme-text-secondary) !important;">
+                            Organize seus estudos com o poder da inteligência artificial. 
+                            Gerencie semestres, matérias, materiais e conte com agentes especializados para te ajudar.
+                        </p>
+                        <div class="d-flex gap-3">
+                            <a href="{% url 'semestres_lista' %}" class="btn btn-primary btn-lg">
+                                <i class="bi bi-calendar3 me-2"></i>Ver Semestres
+                            </a>
+                            <a href="{% url 'academico:materias_lista' %}" class="btn btn-outline-primary btn-lg">
+                                <i class="bi bi-journal-bookmark me-2"></i>Explorar Matérias
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <i class="bi bi-robot display-1 text-primary" style="opacity: 0.7;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estatísticas Rápidas -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card border-theme">
+            <div class="card-body text-center">
+                <i class="bi bi-calendar3 text-primary display-4 mb-3"></i>
+                <h3 class="text-primary">{{ total_semestres }}</h3>
+                <p class="card-text">Semestre{{ total_semestres|pluralize }} Ativo{{ total_semestres|pluralize }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-theme">
+            <div class="card-body text-center">
+                <i class="bi bi-journal-bookmark text-success display-4 mb-3"></i>
+                <h3 class="text-success">{{ total_materias }}</h3>
+                <p class="card-text">Matéria{{ total_materias|pluralize }} Disponíve{{ total_materias|pluralize:"l,is" }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-theme">
+            <div class="card-body text-center">
+                <i class="bi bi-calendar-event text-warning display-4 mb-3"></i>
+                <h3 class="text-warning">{{ total_eventos }}</h3>
+                <p class="card-text">Evento{{ total_eventos|pluralize }} Próximo{{ total_eventos|pluralize }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Conteúdo Principal em Tabs -->
+<div class="row">
+    <div class="col-12">
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs mb-3" id="homeTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="agenda-tab" data-bs-toggle="tab" data-bs-target="#agenda" 
+                        type="button" role="tab">
+                    <i class="bi bi-calendar-check me-2"></i>Agenda Geral
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="semestres-tab" data-bs-toggle="tab" data-bs-target="#semestres" 
+                        type="button" role="tab">
+                    <i class="bi bi-calendar3 me-2"></i>Semestres
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="materias-tab" data-bs-toggle="tab" data-bs-target="#materias" 
+                        type="button" role="tab">
+                    <i class="bi bi-star me-2"></i>Mais Acessadas
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link text-muted" id="chat-tab" data-bs-toggle="tab" data-bs-target="#chat" 
+                        type="button" role="tab">
+                    <i class="bi bi-chat-dots me-2"></i>Chat <small>(em breve)</small>
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab panes -->
+        <div class="tab-content" id="homeTabContent">
+            <!-- Agenda Geral -->
+            <div class="tab-pane fade show active" id="agenda" role="tabpanel">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-calendar-check me-2"></i>Próximos Eventos (7 dias)
+                        </h5>
+                        <a href="{% url 'academico:agenda_geral' %}" class="btn btn-sm btn-outline-primary">
+                            Ver Todos <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        {% if eventos_proximos %}
+                            <div class="row">
+                                {% for evento in eventos_proximos %}
+                                    <div class="col-md-6 col-lg-4 mb-3">
+                                        <div class="card h-100 border-start border-4 border-{% if evento.tipo == 'PROVA' %}danger{% elif evento.tipo == 'TRABALHO' %}warning{% elif evento.tipo == 'AULA' %}primary{% else %}info{% endif %}">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <span class="badge bg-{% if evento.tipo == 'PROVA' %}danger{% elif evento.tipo == 'TRABALHO' %}warning{% elif evento.tipo == 'AULA' %}primary{% else %}info{% endif %}">
+                                                        {{ evento.get_tipo_display }}
+                                                    </span>
+                                                    <small class="text-muted">
+                                                        {{ evento.data_inicio|date:"d/m" }}
+                                                    </small>
+                                                </div>
+                                                <h6 class="card-title">{{ evento.titulo }}</h6>
+                                                <p class="card-text small text-muted mb-2">
+                                                    <i class="bi bi-clock me-1"></i>
+                                                    {{ evento.data_inicio|date:"H:i" }}
+                                                    {% if evento.materia %}
+                                                        <br><i class="bi bi-journal me-1"></i>{{ evento.materia.nome }}
+                                                    {% elif evento.semestre %}
+                                                        <br><i class="bi bi-calendar3 me-1"></i>{{ evento.semestre.nome }}
+                                                    {% endif %}
+                                                </p>
+                                                {% if evento.descricao %}
+                                                    <p class="card-text small">
+                                                        {{ evento.descricao|truncatechars:60 }}
+                                                    </p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-4">
+                                <i class="bi bi-calendar-x text-muted display-4 mb-3"></i>
+                                <p class="text-muted">Nenhum evento nos próximos 7 dias.</p>
+                                <p class="small text-muted">
+                                    <a href="{% url 'academico:agenda_geral' %}" class="text-decoration-none">
+                                        Ver agenda completa <i class="bi bi-arrow-right"></i>
+                                    </a>
+                                </p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Semestres -->
+            <div class="tab-pane fade" id="semestres" role="tabpanel">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-calendar3 me-2"></i>Semestres Ativos
+                        </h5>
+                        <a href="{% url 'semestres_lista' %}" class="btn btn-sm btn-outline-primary">
+                            Ver Todos <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        {% if semestres %}
+                            <div class="row">
+                                {% for semestre in semestres %}
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <h5 class="card-title">{{ semestre.nome }}</h5>
+                                                <p class="card-text">
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-calendar-range me-1"></i>
+                                                        {{ semestre.data_inicio|date:"d/m/Y" }} - {{ semestre.data_fim|date:"d/m/Y" }}
+                                                    </small>
+                                                </p>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-journal me-1"></i>
+                                                        {{ semestre.materias.count }} matéria{{ semestre.materias.count|pluralize }}
+                                                    </small>
+                                                    <a href="{% url 'semestre_detail' semestre.pk %}" class="btn btn-sm btn-primary">
+                                                        Acessar
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-4">
+                                <i class="bi bi-calendar-plus text-muted display-4 mb-3"></i>
+                                <p class="text-muted">Nenhum semestre ativo encontrado.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Matérias Mais Acessadas -->
+            <div class="tab-pane fade" id="materias" role="tabpanel">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-star me-2"></i>Matérias Mais Acessadas
+                        </h5>
+                        <a href="{% url 'academico:materias_lista' %}" class="btn btn-sm btn-outline-primary">
+                            Ver Todas <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        {% if materias_populares %}
+                            <div class="row">
+                                {% for materia in materias_populares %}
+                                    <div class="col-md-6 col-lg-4 mb-3">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    {% if forloop.counter <= 3 %}
+                                                        <span class="badge bg-{% if forloop.counter == 1 %}warning{% elif forloop.counter == 2 %}secondary{% else %}success{% endif %}">
+                                                            #{{ forloop.counter }}
+                                                        </span>
+                                                    {% endif %}
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-eye me-1"></i>{{ materia.contador_acessos }}
+                                                    </small>
+                                                </div>
+                                                <h6 class="card-title">{{ materia.nome }}</h6>
+                                                <p class="card-text small text-muted mb-2">
+                                                    <i class="bi bi-calendar3 me-1"></i>{{ materia.semestre }}
+                                                </p>
+                                                {% if materia.descricao %}
+                                                    <p class="card-text small">
+                                                        {{ materia.descricao|truncatechars:50 }}
+                                                    </p>
+                                                {% endif %}
+                                                <a href="{% url 'academico:materia_detail' materia.slug %}" class="btn btn-sm btn-outline-primary">
+                                                    Acessar
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-4">
+                                <i class="bi bi-journal-plus text-muted display-4 mb-3"></i>
+                                <p class="text-muted">Nenhuma matéria encontrada.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat (Em Breve) -->
+            <div class="tab-pane fade" id="chat" role="tabpanel">
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-robot display-1 text-muted mb-4"></i>
+                        <h4 class="text-muted mb-3">Chat com IA - Em Breve!</h4>
+                        <p class="text-muted mb-4">
+                            Estamos trabalhando em um chat inteligente que poderá conversar sobre todos os aspectos dos seus estudos.<br>
+                            Por enquanto, você pode usar os agentes específicos:
+                        </p>
+                        <div class="row justify-content-center">
+                            <div class="col-md-8">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card border-primary">
+                                            <div class="card-body text-center">
+                                                <i class="bi bi-calendar3 text-primary display-6 mb-2"></i>
+                                                <h6>Agente do Semestre</h6>
+                                                <p class="small text-muted">
+                                                    Responde sobre matérias e eventos de cada semestre
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card border-success">
+                                            <div class="card-body text-center">
+                                                <i class="bi bi-person-workspace text-success display-6 mb-2"></i>
+                                                <h6>Tutor da Matéria</h6>
+                                                <p class="small text-muted">
+                                                    Ajuda com materiais e tarefas de cada matéria
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

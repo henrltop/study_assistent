@@ -1,0 +1,108 @@
+{% load evento_filters %}
+
+<!-- Modal para detalhes do evento -->
+<div class="modal fade" id="eventoModal" tabindex="-1" aria-labelledby="eventoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="eventoModalLabel">
+                    <i class="bi bi-calendar-event me-2"></i>
+                    {{ evento.titulo }}
+                </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-calendar3 me-2"></i>Data e Hora</h6>
+                        <p class="ms-4">
+                            <strong>Início:</strong> {{ evento.data_inicio|date:"d/m/Y H:i" }}<br>
+                            {% if evento.data_fim %}
+                                <strong>Fim:</strong> {{ evento.data_fim|date:"d/m/Y H:i" }}
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-tag me-2"></i>Categoria</h6>
+                        <p class="ms-4">
+                            <span class="badge" style="background-color: {{ evento.cor|default:'#007bff' }}">
+                                {{ evento.get_tipo_display|default:"Evento" }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+
+                {% if evento.descricao %}
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6><i class="bi bi-text-paragraph me-2"></i>Descrição</h6>
+                        <div class="ms-4 p-3 bg-light rounded">
+                            {{ evento.descricao|linebreaks }}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if evento.local %}
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6><i class="bi bi-geo-alt me-2"></i>Local</h6>
+                        <p class="ms-4">{{ evento.local }}</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        {% if evento.semestre %}
+                        <h6><i class="bi bi-book me-2"></i>Semestre</h6>
+                        <p class="ms-4">{{ evento.semestre.nome }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        {% if evento.materia %}
+                        <h6><i class="bi bi-mortarboard me-2"></i>Matéria</h6>
+                        <p class="ms-4">{{ evento.materia.nome }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if evento.observacoes %}
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6><i class="bi bi-chat-square-text me-2"></i>Observações</h6>
+                        <div class="ms-4 p-2 bg-warning-subtle rounded">
+                            {{ evento.observacoes|linebreaks }}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>
+                    Fechar
+                </button>
+                {% if user.is_staff %}
+                <a href="{% url 'admin:academico_eventoagenda_change' evento.pk %}" class="btn btn-primary" target="_blank">
+                    <i class="bi bi-pencil-square me-1"></i>
+                    Editar no Admin
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-abrir o modal quando a página carregar
+document.addEventListener('DOMContentLoaded', function() {
+    var eventoModal = new bootstrap.Modal(document.getElementById('eventoModal'));
+    eventoModal.show();
+    
+    // Redirecionar para agenda quando fechar o modal
+    document.getElementById('eventoModal').addEventListener('hidden.bs.modal', function () {
+        window.location.href = "{% url 'academico:agenda_geral' %}";
+    });
+});
+</script>

@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.form-section {
+    background: var(--theme-bg-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--theme-border-radius);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.form-section h4 {
+    color: var(--theme-primary);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-group-custom {
+    gap: 0.5rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-mortarboard me-2"></i>
+                {{ titulo_pagina }}
+            </h1>
+            {% if materia %}
+            <p class="text-muted mb-0">Editando matéria: {{ materia.nome }}</p>
+            {% else %}
+            <p class="text-muted mb-0">Cadastre uma nova matéria/disciplina</p>
+            {% endif %}
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'academico:materias_lista' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>
+                Voltar à Lista
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Formulário Principal -->
+            <div class="form-section">
+                <h4>
+                    <i class="bi bi-info-circle"></i>
+                    Informações da Matéria
+                </h4>
+                
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.semestre.id_for_label }}" class="form-label">
+                                {{ form.semestre.label }}
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.semestre }}
+                            {% if form.semestre.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.semestre.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {% if form.semestre.help_text %}
+                                <div class="form-text">{{ form.semestre.help_text }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.nome.id_for_label }}" class="form-label">
+                                {{ form.nome.label }}
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.nome }}
+                            {% if form.nome.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.nome.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {% if form.nome.help_text %}
+                                <div class="form-text">{{ form.nome.help_text }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.descricao.id_for_label }}" class="form-label">
+                            {{ form.descricao.label }}
+                        </label>
+                        {{ form.descricao }}
+                        {% if form.descricao.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.descricao.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        {% if form.descricao.help_text %}
+                            <div class="form-text">{{ form.descricao.help_text }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Botões de ação -->
+                    <div class="d-flex btn-group-custom justify-content-end">
+                        <a href="{% url 'academico:materias_lista' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-1"></i>
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-1"></i>
+                            {% if materia %}Atualizar Matéria{% else %}Criar Matéria{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Informações Adicionais -->
+            <div class="form-section">
+                <h4>
+                    <i class="bi bi-lightbulb"></i>
+                    Dicas
+                </h4>
+                
+                <div class="alert alert-info border-0" style="background: var(--theme-info); color: white;">
+                    <h6 class="alert-heading">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Sobre o cadastro:
+                    </h6>
+                    <ul class="mb-0 ps-3">
+                        <li>Escolha um nome claro e único para a matéria</li>
+                        <li>A descrição ajuda a organizar o conteúdo</li>
+                        <li>Uma URL única será gerada automaticamente</li>
+                    </ul>
+                </div>
+                
+                {% if materia %}
+                <div class="alert alert-warning border-0" style="background: var(--theme-warning); color: white;">
+                    <h6 class="alert-heading">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        Cuidado:
+                    </h6>
+                    <p class="mb-0">
+                        Alterar informações da matéria pode afetar materiais, tarefas e eventos já cadastrados.
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+            
+            {% if materia %}
+            <!-- Estatísticas da Matéria -->
+            <div class="form-section">
+                <h4>
+                    <i class="bi bi-graph-up"></i>
+                    Estatísticas
+                </h4>
+                
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="border-theme rounded-3 p-3" style="background: var(--theme-bg-surface-elevated);">
+                            <div class="h4 text-primary mb-1">{{ materia.contador_acessos }}</div>
+                            <small class="text-muted">Acessos</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="border-theme rounded-3 p-3" style="background: var(--theme-bg-surface-elevated);">
+                            <div class="h4 text-success mb-1">{{ materia.materiais.count }}</div>
+                            <small class="text-muted">Materiais</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="border-theme rounded-3 p-3" style="background: var(--theme-bg-surface-elevated);">
+                            <div class="h4 text-info mb-1">{{ materia.tarefas.count }}</div>
+                            <small class="text-muted">Tarefas</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="border-theme rounded-3 p-3" style="background: var(--theme-bg-surface-elevated);">
+                            <div class="h4 text-warning mb-1">{{ materia.eventos.count }}</div>
+                            <small class="text-muted">Eventos</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-focus no primeiro campo do formulário
+    const firstField = document.querySelector('form input[type="text"], form select');
+    if (firstField) {
+        firstField.focus();
+    }
+    
+    // Validação em tempo real
+    const form = document.querySelector('form');
+    const inputs = form.querySelectorAll('input, textarea, select');
+    
+    inputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            // Remove classes de erro/sucesso anteriores
+            this.classList.remove('is-valid', 'is-invalid');
+            
+            // Validação básica
+            if (this.required && !this.value.trim()) {
+                this.classList.add('is-invalid');
+            } else if (this.value.trim()) {
+                this.classList.add('is-valid');
+            }
+        });
+    });
+    
+    // Animação de fade-in para os cards
+    const cards = document.querySelectorAll('.form-section');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.4s ease-out';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

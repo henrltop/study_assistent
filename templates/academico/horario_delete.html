@@ -1,0 +1,342 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Excluir Horário - {{ horario.materia.nome }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .delete-container {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        border: 2px solid #dc3545;
+        border-radius: 20px;
+        padding: 2.5rem;
+        margin: 2rem auto;
+        max-width: 600px;
+        box-shadow: 0 20px 40px rgba(220, 53, 69, 0.1);
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+    }
+
+    .delete-container::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(220, 53, 69, 0.03), transparent);
+        animation: shimmer 3s infinite;
+    }
+
+    @keyframes shimmer {
+        0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+        100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+
+    .delete-header {
+        margin-bottom: 2rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .delete-icon {
+        font-size: 4rem;
+        color: #dc3545;
+        margin-bottom: 1rem;
+        text-shadow: 0 2px 10px rgba(220, 53, 69, 0.3);
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    .delete-header h1 {
+        color: #dc3545;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .delete-subtitle {
+        color: #FFB347;
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+
+    .horario-info {
+        background: rgba(220, 53, 69, 0.1);
+        border: 1px solid rgba(220, 53, 69, 0.3);
+        border-radius: 15px;
+        padding: 2rem;
+        margin: 2rem 0;
+        position: relative;
+        z-index: 2;
+    }
+
+    .horario-detail {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .horario-detail:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+
+    .horario-label {
+        font-weight: 600;
+        color: #FF6B35;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .horario-value {
+        color: #ffffff;
+        font-weight: 500;
+    }
+
+    .warning-message {
+        background: rgba(255, 193, 7, 0.1);
+        border: 1px solid rgba(255, 193, 7, 0.3);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin: 2rem 0;
+        color: #ffc107;
+        font-size: 1rem;
+        line-height: 1.5;
+        position: relative;
+        z-index: 2;
+    }
+
+    .warning-message i {
+        margin-right: 0.5rem;
+        font-size: 1.2rem;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        border: none;
+        padding: 0.8rem 2rem;
+        border-radius: 12px;
+        color: white;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        min-width: 120px;
+    }
+
+    .btn-danger:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(220, 53, 69, 0.3);
+        background: linear-gradient(135deg, #c82333 0%, #dc3545 100%);
+    }
+
+    .btn-secondary {
+        background: linear-gradient(135deg, #666 0%, #555 100%);
+        border: none;
+        padding: 0.8rem 2rem;
+        border-radius: 12px;
+        color: white;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        min-width: 120px;
+    }
+
+    .btn-secondary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(102, 102, 102, 0.3);
+        background: linear-gradient(135deg, #777 0%, #666 100%);
+    }
+
+    .days-map {
+        display: none;
+    }
+
+    /* Responsivo */
+    @media (max-width: 768px) {
+        .delete-container {
+            margin: 1rem;
+            padding: 2rem;
+        }
+
+        .btn-group {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .horario-detail {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .delete-icon {
+            font-size: 3rem;
+        }
+
+        .delete-header h1 {
+            font-size: 1.6rem;
+        }
+    }
+
+    /* Animação de entrada */
+    .delete-container {
+        animation: slideIn 0.6s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="delete-container">
+    <div class="delete-header">
+        <div class="delete-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h1>Excluir Horário</h1>
+        <div class="delete-subtitle">{{ horario.materia.nome }}</div>
+    </div>
+
+    <div class="warning-message">
+        <i class="fas fa-warning"></i>
+        <strong>Atenção!</strong> Esta ação não pode ser desfeita. O horário será permanentemente removido do sistema.
+    </div>
+
+    <div class="horario-info">
+        <div class="horario-detail">
+            <span class="horario-label">
+                <i class="fas fa-calendar-day"></i> Dia da Semana
+            </span>
+            <span class="horario-value">{{ horario.get_dia_semana_display }}</span>
+        </div>
+
+        <div class="horario-detail">
+            <span class="horario-label">
+                <i class="fas fa-clock"></i> Horário
+            </span>
+            <span class="horario-value">{{ horario.hora_inicio|time:"H:i" }} - {{ horario.hora_fim|time:"H:i" }}</span>
+        </div>
+
+        {% if horario.local %}
+        <div class="horario-detail">
+            <span class="horario-label">
+                <i class="fas fa-map-marker-alt"></i> Local
+            </span>
+            <span class="horario-value">{{ horario.local }}</span>
+        </div>
+        {% endif %}
+
+        {% if horario.observacoes %}
+        <div class="horario-detail">
+            <span class="horario-label">
+                <i class="fas fa-sticky-note"></i> Observações
+            </span>
+            <span class="horario-value">{{ horario.observacoes }}</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="btn-group">
+            <button type="submit" class="btn-danger">
+                <i class="fas fa-trash"></i> Sim, Excluir
+            </button>
+            <a href="{% url 'academico:horarios_materia' horario.materia.id %}" class="btn-secondary">
+                <i class="fas fa-arrow-left"></i> Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Mapeamento de dias da semana para JavaScript -->
+<div class="days-map" data-days='{
+    "0": "Segunda-feira",
+    "1": "Terça-feira", 
+    "2": "Quarta-feira",
+    "3": "Quinta-feira",
+    "4": "Sexta-feira",
+    "5": "Sábado",
+    "6": "Domingo"
+}'></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Confirmação adicional antes de excluir
+    const form = document.querySelector('form');
+    const deleteBtn = document.querySelector('.btn-danger');
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const materia = '{{ horario.materia.nome }}';
+        const dia = '{{ horario.get_dia_semana_display }}';
+        const horario = '{{ horario.hora_inicio|time:"H:i" }} - {{ horario.hora_fim|time:"H:i" }}';
+        
+        const confirmMessage = `Tem certeza que deseja excluir o horário de ${materia}?\n\nDia: ${dia}\nHorário: ${horario}\n\nEsta ação não pode ser desfeita.`;
+        
+        if (confirm(confirmMessage)) {
+            // Desabilita o botão para evitar múltiplos cliques
+            deleteBtn.disabled = true;
+            deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Excluindo...';
+            
+            // Submete o formulário
+            this.submit();
+        }
+    });
+    
+    // Efeito de hover nos botões
+    const buttons = document.querySelectorAll('.btn-danger, .btn-secondary');
+    buttons.forEach(button => {
+        button.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-3px) scale(1.05)';
+        });
+        
+        button.addEventListener('mouseleave', function() {
+            if (!this.disabled) {
+                this.style.transform = 'translateY(0) scale(1)';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

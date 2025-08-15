@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+        <li class="breadcrumb-item active">Semestres</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.semestre-atual-card {
+    background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-hover) 100%);
+    color: white;
+    border: none;
+    box-shadow: var(--theme-shadow-xl);
+}
+
+.semestre-atual-card .card-body {
+    padding: 3rem;
+}
+
+.semestre-atual-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.semestre-atual-subtitle {
+    font-size: 1.2rem;
+    opacity: 0.95;
+}
+
+.outros-semestres-section {
+    margin-top: 3rem;
+}
+
+.semestre-card-pequeno {
+    transition: all 0.3s ease;
+    border: 1px solid var(--theme-border);
+}
+
+.semestre-card-pequeno:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--theme-shadow-lg);
+    border-color: var(--theme-primary);
+}
+
+.badge-destaque {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    font-size: 0.9rem;
+}
+
+.btn-adicionar-semestre {
+    background: var(--theme-success);
+    border-color: var(--theme-success);
+    color: white;
+    font-weight: 600;
+}
+
+.btn-adicionar-semestre:hover {
+    background: var(--theme-success-hover);
+    border-color: var(--theme-success-hover);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Botões do semestre atual - cores ajustadas */
+.semestre-atual-card .btn-light {
+    background: white !important;
+    border-color: white !important;
+    color: var(--theme-primary) !important;
+    font-weight: 600;
+}
+
+.semestre-atual-card .btn-light:hover {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border-color: rgba(255, 255, 255, 0.9) !important;
+    color: var(--theme-primary-hover) !important;
+    transform: translateY(-2px);
+}
+
+.semestre-atual-card .btn-outline-light {
+    background: transparent !important;
+    border-color: white !important;
+    color: white !important;
+    font-weight: 500;
+}
+
+.semestre-atual-card .btn-outline-light:hover {
+    background: white !important;
+    border-color: white !important;
+    color: var(--theme-primary) !important;
+    transform: translateY(-2px);
+}
+
+.icon-destaque {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.9;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-calendar3 me-2 text-primary"></i>
+                Semestres Acadêmicos
+            </h1>
+            <p class="text-muted mb-0">Gerencie seus semestres letivos</p>
+        </div>
+        {% if user.is_staff %}
+            <a href="{% url 'admin:academico_semestre_add' %}" class="btn btn-adicionar-semestre">
+                <i class="bi bi-plus-circle me-2"></i>Novo Semestre
+            </a>
+        {% endif %}
+    </div>
+
+    {% if semestre_atual %}
+        <!-- Semestre Atual em Destaque -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card semestre-atual-card">
+                    <div class="card-body text-center">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <i class="bi bi-calendar-check icon-destaque"></i>
+                                <h2 class="semestre-atual-title mb-2">{{ semestre_atual.nome }}</h2>
+                                <p class="semestre-atual-subtitle mb-3">
+                                    <i class="bi bi-calendar-range me-2"></i>
+                                    {{ semestre_atual.data_inicio|date:"d/m/Y" }} - {{ semestre_atual.data_fim|date:"d/m/Y" }}
+                                </p>
+                                <span class="badge badge-destaque fs-6">
+                                    <i class="bi bi-star me-1"></i>Semestre Atual - {{ semestre_atual.get_periodo_display }} {{ semestre_atual.ano }}
+                                </span>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="row text-center">
+                                    <div class="col-6">
+                                        <div class="display-4 fw-bold">{{ semestre_atual.materias.count }}</div>
+                                        <small style="opacity: 0.9;">Matéria{{ semestre_atual.materias.count|pluralize }}</small>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="display-4 fw-bold">{{ semestre_atual.ano }}</div>
+                                        <small style="opacity: 0.9;">Ano Letivo</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-center gap-3">
+                                    <a href="{% url 'semestre_detail' semestre_atual.pk %}" class="btn btn-light btn-lg">
+                                        <i class="bi bi-arrow-right-circle me-2"></i>
+                                        Acessar Semestre
+                                    </a>
+                                    <a href="{% url 'academico:materias_lista' %}?semestre={{ semestre_atual.pk }}" class="btn btn-outline-light">
+                                        <i class="bi bi-journal-bookmark me-2"></i>
+                                        Ver Matérias
+                                    </a>
+                                    <a href="{% url 'academico:todolist_semestre' semestre_atual.pk %}" class="btn btn-outline-light">
+                                        <i class="bi bi-list-check me-2"></i>
+                                        Lista de Tarefas
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Outros Semestres -->
+    {% if outros_semestres %}
+        <div class="outros-semestres-section">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="h5 mb-0">
+                    <i class="bi bi-archive me-2"></i>
+                    {% if semestre_atual %}Outros Semestres{% else %}Semestres Disponíveis{% endif %}
+                </h3>
+                <small class="text-muted">{{ outros_semestres.count }} semestre{{ outros_semestres.count|pluralize }}</small>
+            </div>
+            
+            <div class="row">
+                {% for semestre in outros_semestres %}
+                    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                        <div class="card semestre-card-pequeno h-100">
+                            <div class="card-header bg-light">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0 text-truncate">{{ semestre.nome }}</h6>
+                                    <small class="badge bg-secondary">{{ semestre.get_periodo_display }}</small>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-center mb-3">
+                                    <div class="col-6">
+                                        <small class="text-muted">Ano</small>
+                                        <div class="fw-bold">{{ semestre.ano }}</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Matérias</small>
+                                        <div class="fw-bold text-primary">{{ semestre.materias.count }}</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <small class="text-muted d-block">Período</small>
+                                    <div class="small">
+                                        {{ semestre.data_inicio|date:"d/m" }} - {{ semestre.data_fim|date:"d/m/Y" }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <div class="d-grid">
+                                    <a href="{% url 'semestre_detail' semestre.pk %}" class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-eye me-1"></i>Visualizar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% elif not semestre_atual %}
+        <!-- Nenhum semestre encontrado -->
+        <div class="text-center py-5">
+            <i class="bi bi-calendar-plus text-muted" style="font-size: 4rem;"></i>
+            <h4 class="text-muted mt-3">Nenhum semestre encontrado</h4>
+            <p class="text-muted">
+                Ainda não há semestres cadastrados no sistema.
+                {% if user.is_staff %}
+                    <br>Comece criando seu primeiro semestre.
+                {% endif %}
+            </p>
+            {% if user.is_staff %}
+                <a href="{% url 'admin:academico_semestre_add' %}" class="btn btn-primary mt-3">
+                    <i class="bi bi-plus-circle me-2"></i>Adicionar Primeiro Semestre
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <!-- Dica de Navegação -->
+    {% if semestre_atual or outros_semestres %}
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card border-info">
+                    <div class="card-body text-center">
+                        <i class="bi bi-lightbulb text-info me-2"></i>
+                        <strong>Dica:</strong> 
+                        Acesse um semestre para ver suas matérias, agenda e usar o agente especializado em contexto acadêmico.
+                        <div class="mt-3">
+                            <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-sm me-2">
+                                <i class="bi bi-house me-1"></i>Voltar ao Início
+                            </a>
+                            <a href="{% url 'academico:materias_lista' %}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-mortarboard me-1"></i>Ver Todas as Matérias
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

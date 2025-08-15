@@ -1,0 +1,403 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'semestres_lista' %}">Semestres</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'semestre_detail' materia.semestre.pk %}">{{ materia.semestre.nome }}</a></li>
+        <li class="breadcrumb-item active">{{ materia.nome }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<!-- Cabeçalho da Matéria -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card materia-card bg-surface-elevated">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="display-6 mb-2">
+                            <i class="bi bi-journal-bookmark me-2 text-primary"></i>{{ materia.nome }}
+                        </h1>
+                        <p class="lead mb-2">
+                            <i class="bi bi-calendar3 me-2 text-success"></i>{{ materia.semestre }}
+                        </p>
+                        {% if materia.descricao %}
+                            <p class="text-secondary">{{ materia.descricao }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="d-flex justify-content-end gap-4">
+                            <div class="text-center">
+                                <div class="display-6 text-info">{{ materiais.count }}</div>
+                                <small class="text-secondary">Material{{ materiais.count|pluralize:"ais" }}</small>
+                            </div>
+                            <div class="text-center">
+                                <div class="display-6 text-warning">{{ tarefas_pendentes.count }}</div>
+                                <small class="text-secondary">Tarefa{{ tarefas_pendentes.count|pluralize }} Pendente{{ tarefas_pendentes.count|pluralize }}</small>
+                            </div>
+                            <div class="text-center">
+                                <div class="display-6 text-muted">{{ materia.contador_acessos }}</div>
+                                <small class="text-secondary">Acesso{{ materia.contador_acessos|pluralize }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tutor da Matéria -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-success">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-person-workspace me-2"></i>Tutor da Matéria
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">
+                    O tutor pode ajudar com questões sobre os materiais didáticos, tarefas e cronograma desta matéria.
+                </p>
+                <form method="post" action="{% url 'academico:materia_tutor' materia.slug %}" id="tutorForm">
+                    {% csrf_token %}
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="pergunta" 
+                               placeholder="Ex: Quais materiais estão disponíveis? O que preciso estudar para a próxima prova?"
+                               required>
+                        <button class="btn btn-success" type="submit">
+                            <i class="bi bi-send me-1"></i>Perguntar ao Tutor
+                        </button>
+                    </div>
+                </form>
+                <div id="respostaTutor" class="mt-3" style="display: none;">
+                    <div class="alert alert-success">
+                        <div id="textoRespostaTutor"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Coluna Principal -->
+    <div class="col-lg-8">
+        <!-- Materiais Didáticos -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-files me-2"></i>Materiais Didáticos
+                </h5>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'academico:material_upload' materia.slug %}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-cloud-upload me-1"></i>Enviar Material
+                    </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if materiais %}
+                    <div class="row">
+                        {% for material in materiais %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100 border-start border-4 border-{% if material.tipo == 'PDF' %}danger{% elif material.tipo == 'DOCX' %}primary{% else %}info{% endif %}">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h6 class="card-title mb-0">{{ material.titulo }}</h6>
+                                            <span class="badge bg-{% if material.tipo == 'PDF' %}danger{% elif material.tipo == 'DOCX' %}primary{% else %}info{% endif %}">
+                                                {{ material.tipo }}
+                                            </span>
+                                        </div>
+                                        
+                                        <div class="small text-muted mb-2">
+                                            <i class="bi bi-calendar3 me-1"></i>{{ material.data_upload|date:"d/m/Y H:i" }}
+                                            {% if material.usuario %}
+                                                <br><i class="bi bi-person me-1"></i>{{ material.usuario.first_name|default:material.usuario.username }}
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">
+                                                <i class="bi bi-file-earmark me-1"></i>{{ material.get_tamanho_arquivo }}
+                                            </small>
+                                            <a href="{% url 'academico:material_download' material.pk %}" class="btn btn-sm btn-outline-success">
+                                                <i class="bi bi-download me-1"></i>Baixar
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-cloud-upload text-muted display-4 mb-3"></i>
+                        <p class="text-muted">Nenhum material didático enviado ainda.</p>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'academico:material_upload' materia.slug %}" class="btn btn-primary">
+                                <i class="bi bi-cloud-upload me-2"></i>Enviar Primeiro Material
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Tarefas -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-list-task me-2"></i>Tarefas
+                </h5>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'academico:tarefa_create' materia.slug %}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-plus-circle me-1"></i>Nova Tarefa
+                    </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <!-- Tarefas Pendentes -->
+                {% if tarefas_pendentes %}
+                    <h6 class="text-warning mb-3">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Pendentes
+                    </h6>
+                    {% for tarefa in tarefas_pendentes %}
+                        <div class="card mb-2 border-start border-4 border-{% if tarefa.esta_atrasada %}danger{% elif tarefa.dias_para_prazo and tarefa.dias_para_prazo <= 3 %}warning{% else %}primary{% endif %}">
+                            <div class="card-body py-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">{{ tarefa.titulo }}</h6>
+                                        <div class="small text-muted">
+                                            {% if tarefa.prazo %}
+                                                <i class="bi bi-clock me-1"></i>
+                                                Prazo: {{ tarefa.prazo|date:"d/m/Y H:i" }}
+                                                {% if tarefa.esta_atrasada %}
+                                                    <span class="text-danger fw-bold">(ATRASADA)</span>
+                                                {% elif tarefa.dias_para_prazo <= 3 %}
+                                                    <span class="text-warning fw-bold">(URGENTE)</span>
+                                                {% endif %}
+                                            {% else %}
+                                                <i class="bi bi-calendar-x me-1"></i>Sem prazo definido
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        {% if user.is_authenticated %}
+                                            <button class="btn btn-sm btn-outline-success" 
+                                                    onclick="toggleTarefa({{ tarefa.pk }}, this)">
+                                                <i class="bi bi-check-circle me-1"></i>Concluir
+                                            </button>
+                                            <a href="{% url 'academico:tarefa_edit' tarefa.pk %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <!-- Tarefas Concluídas (últimas 5) -->
+                {% if tarefas_concluidas %}
+                    <h6 class="text-success mb-3 mt-4">
+                        <i class="bi bi-check-circle me-2"></i>Concluídas Recentemente
+                    </h6>
+                    {% for tarefa in tarefas_concluidas %}
+                        <div class="card mb-2 border-start border-4 border-success opacity-75">
+                            <div class="card-body py-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 text-decoration-line-through">{{ tarefa.titulo }}</h6>
+                                        <div class="small text-muted">
+                                            <i class="bi bi-check-circle me-1"></i>
+                                            Concluída em: {{ tarefa.atualizado_em|date:"d/m/Y H:i" }}
+                                        </div>
+                                    </div>
+                                    {% if user.is_authenticated %}
+                                        <button class="btn btn-sm btn-outline-warning" 
+                                                onclick="toggleTarefa({{ tarefa.pk }}, this)">
+                                            <i class="bi bi-arrow-counterclockwise me-1"></i>Reabrir
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                {% if not tarefas_pendentes and not tarefas_concluidas %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-list-check text-muted display-4 mb-3"></i>
+                        <p class="text-muted">Nenhuma tarefa cadastrada ainda.</p>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'academico:tarefa_create' materia.slug %}" class="btn btn-primary">
+                                <i class="bi bi-plus-circle me-2"></i>Criar Primeira Tarefa
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Próximos Eventos -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-calendar-event me-2"></i>Próximos Eventos
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if eventos_proximos %}
+                    {% for evento in eventos_proximos %}
+                        <div class="border-start border-4 border-{% if evento.tipo == 'PROVA' %}danger{% elif evento.tipo == 'TRABALHO' %}warning{% elif evento.tipo == 'AULA' %}primary{% else %}info{% endif %} ps-3 mb-3">
+                            <h6 class="mb-1">{{ evento.titulo }}</h6>
+                            <div class="small text-muted mb-1">
+                                <i class="bi bi-clock me-1"></i>{{ evento.data_inicio|date:"d/m H:i" }}
+                            </div>
+                            <span class="badge bg-{% if evento.tipo == 'PROVA' %}danger{% elif evento.tipo == 'TRABALHO' %}warning{% elif evento.tipo == 'AULA' %}primary{% else %}info{% endif %}">
+                                {{ evento.get_tipo_display }}
+                            </span>
+                        </div>
+                    {% endfor %}
+                    {% if user.is_authenticated %}
+                        <div class="text-center mt-3">
+                            <a href="{% url 'academico:evento_create' materia.slug %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-plus-circle me-1"></i>Novo Evento
+                            </a>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-3">
+                        <i class="bi bi-calendar-plus text-muted display-6 mb-2"></i>
+                        <p class="text-muted small">Nenhum evento próximo.</p>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'academico:evento_create' materia.slug %}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-plus-circle me-1"></i>Criar Evento
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Estatísticas -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-bar-chart me-2"></i>Estatísticas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 border-end">
+                        <div class="h4 text-primary">{{ materia.contador_acessos }}</div>
+                        <small class="text-muted">Acessos</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h4 text-success">{{ materiais.count }}</div>
+                        <small class="text-muted">Materiais</small>
+                    </div>
+                </div>
+                <hr>
+                <div class="row text-center">
+                    <div class="col-6 border-end">
+                        <div class="h4 text-warning">{{ tarefas_pendentes.count }}</div>
+                        <small class="text-muted">Pendentes</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h4 text-info">{{ eventos_proximos.count }}</div>
+                        <small class="text-muted">Eventos</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Tutor da Matéria
+document.getElementById('tutorForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Consultando tutor...';
+    submitBtn.disabled = true;
+    
+    fetch(this.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const respostaDiv = document.getElementById('respostaTutor');
+        const textoDiv = document.getElementById('textoRespostaTutor');
+        
+        if (data.sucesso) {
+            textoDiv.innerHTML = data.resposta.replace(/\n/g, '<br>');
+            respostaDiv.style.display = 'block';
+            respostaDiv.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            alert('Erro: ' + (data.erro || 'Tente novamente'));
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('Erro ao processar sua pergunta. Tente novamente.');
+    })
+    .finally(() => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        this.reset();
+    });
+});
+
+// Toggle status da tarefa
+function toggleTarefa(tarefaId, button) {
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+    button.disabled = true;
+    
+    fetch(`/academico/tarefas/${tarefaId}/toggle/`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.sucesso) {
+            location.reload(); // Recarregar para atualizar a interface
+        } else {
+            alert('Erro: ' + (data.erro || 'Tente novamente'));
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('Erro ao alterar status da tarefa.');
+    })
+    .finally(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,393 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ titulo_pagina|default:"Assistente de Estudos" }}{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tema Dark Customizado -->
+    <link rel="stylesheet" href="{% static 'css/theme-dark.css' %}">
+    
+    <!-- Estilos customizados -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+
+    <style>
+        /* Fix para o dropdown do navbar ficar na frente de outros elementos */
+        .navbar {
+            z-index: 1030;
+        }
+        
+        .navbar .dropdown-menu {
+            z-index: 1031;
+        }
+        
+        /* Força o dropdown a ficar sempre na frente */
+        .navbar-nav .dropdown-menu {
+            z-index: 1050 !important;
+        }
+
+        /* Footer Moderno */
+        .footer-dark {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #e0e0e0;
+            border-top: 3px solid var(--theme-primary);
+        }
+
+        /* Logout button styling para parecer com dropdown-item */
+        .btn-logout {
+            width: 100%;
+            text-align: left;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: background-color 0.15s ease-in-out;
+        }
+
+        .btn-logout:hover {
+            background-color: var(--bs-dropdown-link-hover-bg) !important;
+            color: var(--bs-dropdown-link-hover-color) !important;
+        }
+
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-icon {
+            font-size: 1.8rem;
+            color: var(--theme-primary);
+        }
+
+        .footer-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .footer-subtitle {
+            color: #b0b0b0;
+            font-size: 0.9rem;
+            margin: 0;
+            font-style: italic;
+        }
+
+        .footer-stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+        }
+
+        .footer-stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .footer-stat-item i {
+            font-size: 1.2rem;
+            color: var(--theme-primary);
+        }
+
+        .footer-stat-item span {
+            font-size: 0.8rem;
+            color: #b0b0b0;
+        }
+
+        .footer-tech {
+            text-align: right;
+        }
+
+        .footer-tech-text {
+            color: #888;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-love {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: #b0b0b0;
+        }
+
+        .footer-love i {
+            color: #ff6b6b;
+            animation: heartbeat 2s infinite;
+        }
+
+        .footer-divider {
+            border-color: #404040;
+            margin: 1.5rem 0 1rem 0;
+        }
+
+        .footer-copyright {
+            color: #888;
+            font-size: 0.8rem;
+        }
+
+        @keyframes heartbeat {
+            0%, 50%, 100% { transform: scale(1); }
+            25%, 75% { transform: scale(1.1); }
+        }
+
+        @media (max-width: 768px) {
+            .footer-stats {
+                margin: 1rem 0;
+            }
+            
+            .footer-tech {
+                text-align: center;
+                margin-top: 1rem;
+            }
+            
+            .footer-love {
+                justify-content: center;
+            }
+        }
+    </style>
+    </head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container">
+            <!-- Brand -->
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+                <i class="bi bi-mortarboard me-2"></i>
+                Assistente de Estudos
+            </a>
+
+            <!-- Mobile toggle -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Navigation Links -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center" href="{% url 'home' %}">
+                            <i class="bi bi-house-fill me-2"></i>
+                            <span>Início</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center" href="{% url 'semestres_lista' %}">
+                            <i class="bi bi-calendar3 me-2"></i>
+                            <span>Semestres</span>
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-journal-bookmark me-2"></i>
+                            <span>Acadêmico</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center" href="{% url 'academico:materias_lista' %}">
+                                    <i class="bi bi-mortarboard me-2"></i>
+                                    <span>Matérias</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center" href="{% url 'academico:agenda_geral' %}">
+                                    <i class="bi bi-calendar-event me-2"></i>
+                                    <span>Agenda Geral</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center" href="{% url 'academico:materials_lista' %}">
+                                    <i class="bi bi-files me-2"></i>
+                                    <span>Materiais</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-calendar-week me-2"></i>
+                            <span>Calendário</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center" href="{% url 'calendario:calendario_home' %}">
+                                    <i class="bi bi-calendar-month me-2"></i>
+                                    <span>Visualizar Calendário</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center" href="{% url 'calendario:eventos_lista' %}">
+                                    <i class="bi bi-list-ul me-2"></i>
+                                    <span>Lista de Eventos</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center" href="{% url 'calendario:evento_criar' %}">
+                                    <i class="bi bi-plus-circle me-2"></i>
+                                    <span>Novo Evento</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <!-- Right Side Links -->
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle me-2"></i>
+                                <span>{{ user.first_name|default:user.username }}</span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item d-flex align-items-center" href="{% url 'admin:index' %}">
+                                        <i class="bi bi-gear me-2"></i>
+                                        <span>Admin</span>
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item d-flex align-items-center" href="{% url 'admin:logout' %}">
+                                        <i class="bi bi-box-arrow-right me-2"></i>
+                                        <span>Sair</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center" href="{% url 'admin:login' %}">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>
+                                <span>Entrar</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow-1">
+        <div class="container mt-4">
+            {% if messages %}
+                <div class="row">
+                    <div class="col-12">
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                                {% if message.tags == 'error' %}
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                {% elif message.tags == 'success' %}
+                                    <i class="bi bi-check-circle-fill me-2"></i>
+                                {% elif message.tags == 'warning' %}
+                                    <i class="bi bi-exclamation-circle-fill me-2"></i>
+                                {% else %}
+                                    <i class="bi bi-info-circle-fill me-2"></i>
+                                {% endif %}
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            {% block breadcrumb %}{% endblock %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <footer class="footer-dark mt-5">
+        <div class="container py-4">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <div class="footer-brand">
+                        <i class="bi bi-mortarboard footer-icon"></i>
+                        <span class="footer-title">Assistente de Estudos</span>
+                    </div>
+                    <p class="footer-subtitle">
+                        Organize seus estudos com inteligência
+                    </p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="footer-stats">
+                        <div class="footer-stat-item">
+                            <i class="bi bi-robot"></i>
+                            <span>IA Integrada</span>
+                        </div>
+                        <div class="footer-stat-item">
+                            <i class="bi bi-shield-check"></i>
+                            <span>Open Source</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="footer-tech">
+                        <small class="footer-tech-text">
+                            <i class="bi bi-code-slash me-1"></i>
+                            Django 5 + Bootstrap 5
+                        </small>
+                        <div class="footer-love">
+                            <i class="bi bi-heart-fill"></i>
+                            <span>Feito com dedicação</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr class="footer-divider">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <small class="footer-copyright">
+                        © 2025 Assistente de Estudos - Transformando a forma de estudar
+                    </small>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script src="{% static 'js/main.js' %}"></script>
+    
+    {% block extra_js %}{% endblock %}
+
+    <script>
+        // Função para mostrar aviso sobre eventos em breve
+        function mostrarEventoEmBreve() {
+            alert('📅 Funcionalidade de criação de eventos estará disponível em breve!\n\nPor enquanto, você pode:\n• Visualizar eventos na agenda\n• Usar os agentes de IA para consultas');
+        }
+
+        // Função para mostrar aviso sobre chat em breve
+        function mostrarChatEmBreve() {
+            alert('🤖 O Chat com IA estará disponível em breve!\n\nPor enquanto, use os agentes específicos:\n• Agente do Semestre (em cada semestre)\n• Tutor da Matéria (em cada matéria)');
+        }
+
+        // Auto-hide alerts após 5 segundos
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                var alerts = document.querySelectorAll('.alert');
+                alerts.forEach(function(alert) {
+                    var bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                });
+            }, 5000);
+        });
+    </script>
+</body>
+</html>

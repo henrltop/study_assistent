@@ -1,0 +1,321 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.materia-card {
+    background: var(--theme-bg-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--theme-border-radius);
+    padding: 1.5rem;
+    height: 100%;
+    transition: all 0.3s ease;
+}
+
+.materia-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--theme-shadow-lg);
+    border-color: var(--theme-primary);
+}
+
+.materia-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.materia-title {
+    color: var(--theme-text-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.materia-semestre {
+    background: var(--theme-primary);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--theme-border-radius-sm);
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.materia-stats {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--theme-border);
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.9rem;
+    color: var(--theme-text-secondary);
+}
+
+.search-filters {
+    background: var(--theme-bg-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--theme-border-radius);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stats-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: var(--theme-bg-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--theme-border-radius);
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--theme-primary);
+}
+
+.stat-label {
+    color: var(--theme-text-secondary);
+    font-size: 0.9rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-mortarboard me-2"></i>
+                {{ titulo_pagina }}
+            </h1>
+            <p class="text-muted mb-0">Todas as matérias cadastradas no sistema</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-house me-1"></i>
+                Início
+            </a>
+            <a href="{% url 'academico:materia_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i>
+                Nova Matéria
+            </a>
+        </div>
+    </div>
+
+    <!-- Estatísticas Rápidas -->
+    <div class="stats-cards">
+        <div class="stat-card">
+            <div class="stat-value">{{ page_obj.paginator.count }}</div>
+            <div class="stat-label">Total de Matérias</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ semestres.count }}</div>
+            <div class="stat-label">Semestres Ativos</div>
+        </div>
+    </div>
+
+    <!-- Filtros e Busca -->
+    <div class="search-filters">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="busca" class="form-label">Buscar Matérias</label>
+                <input type="search" class="form-control" id="busca" name="busca" 
+                       value="{{ busca }}" placeholder="Nome da matéria, descrição...">
+            </div>
+            
+            <div class="col-md-3">
+                <label for="semestre" class="form-label">Semestre</label>
+                <select class="form-select" id="semestre" name="semestre">
+                    <option value="">Todos os semestres</option>
+                    {% for semestre in semestres %}
+                        <option value="{{ semestre.pk }}" {% if semestre_selecionado|stringformat:"s" == semestre.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ semestre.nome }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-md-3">
+                <label for="ordem" class="form-label">Ordenar por</label>
+                <select class="form-select" id="ordem" name="ordem">
+                    <option value="nome" {% if ordem == 'nome' %}selected{% endif %}>Nome A-Z</option>
+                    <option value="acessos" {% if ordem == 'acessos' %}selected{% endif %}>Mais Acessadas</option>
+                    <option value="recente" {% if ordem == 'recente' %}selected{% endif %}>Mais Recentes</option>
+                </select>
+            </div>
+            
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search me-1"></i>
+                    Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Lista de Matérias -->
+    {% if page_obj.object_list %}
+        <div class="row g-4">
+            {% for materia in page_obj.object_list %}
+                <div class="col-lg-4 col-md-6">
+                    <div class="materia-card">
+                        <div class="materia-header">
+                            <h5 class="materia-title">{{ materia.nome }}</h5>
+                            <span class="materia-semestre">{{ materia.semestre.nome }}</span>
+                        </div>
+                        
+                        {% if materia.descricao %}
+                            <p class="text-muted mb-0">{{ materia.descricao|truncatewords:15 }}</p>
+                        {% endif %}
+                        
+                        <div class="materia-stats">
+                            <div class="stat-item">
+                                <i class="bi bi-eye text-primary"></i>
+                                <span>{{ materia.contador_acessos }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="bi bi-file-earmark text-success"></i>
+                                <span>{{ materia.materiais.count }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="bi bi-check-square text-info"></i>
+                                <span>{{ materia.tarefas.count }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="bi bi-calendar-event text-warning"></i>
+                                <span>{{ materia.eventos.count }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2 mt-3">
+                            <a href="{% url 'academico:materia_detail' materia.slug %}" 
+                               class="btn btn-outline-primary btn-sm flex-fill">
+                                <i class="bi bi-eye me-1"></i>
+                                Ver Detalhes
+                            </a>
+                            <a href="{% url 'academico:materia_edit' materia.slug %}" 
+                               class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Paginação -->
+        {% if page_obj.has_other_pages %}
+            <nav aria-label="Navegação de páginas" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if busca %}busca={{ busca }}&{% endif %}{% if semestre_selecionado %}semestre={{ semestre_selecionado }}&{% endif %}{% if ordem %}ordem={{ ordem }}&{% endif %}page={{ page_obj.previous_page_number }}">
+                                <i class="bi bi-chevron-left"></i>
+                                Anterior
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% if busca %}busca={{ busca }}&{% endif %}{% if semestre_selecionado %}semestre={{ semestre_selecionado }}&{% endif %}{% if ordem %}ordem={{ ordem }}&{% endif %}page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if busca %}busca={{ busca }}&{% endif %}{% if semestre_selecionado %}semestre={{ semestre_selecionado }}&{% endif %}{% if ordem %}ordem={{ ordem }}&{% endif %}page={{ page_obj.next_page_number }}">
+                                Próxima
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <!-- Nenhuma matéria encontrada -->
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <i class="bi bi-mortarboard" style="font-size: 4rem; color: var(--theme-text-muted);"></i>
+            </div>
+            <h4 class="text-muted mb-3">Nenhuma matéria encontrada</h4>
+            {% if busca or semestre_selecionado %}
+                <p class="text-muted mb-4">Tente ajustar os filtros ou fazer uma nova busca.</p>
+                <a href="{% url 'academico:materias_lista' %}" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-arrow-clockwise me-1"></i>
+                    Limpar Filtros
+                </a>
+            {% else %}
+                <p class="text-muted mb-4">Comece cadastrando sua primeira matéria.</p>
+            {% endif %}
+            <a href="{% url 'academico:materia_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i>
+                Cadastrar Matéria
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animação de fade-in para os cards
+    const cards = document.querySelectorAll('.materia-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.4s ease-out';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 50);
+    });
+    
+    // Auto-submit do formulário de busca com debounce
+    const buscaInput = document.getElementById('busca');
+    let searchTimeout;
+    
+    buscaInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            if (this.value.length >= 2 || this.value.length === 0) {
+                this.form.submit();
+            }
+        }, 500);
+    });
+    
+    // Submissão automática ao mudar filtros
+    const selectFilters = document.querySelectorAll('#semestre, #ordem');
+    selectFilters.forEach(select => {
+        select.addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+});
+</script>
+{% endblock %}
