@@ -48,3 +48,9 @@ class RecorrenciaEventoAdmin(admin.ModelAdmin):
     
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('evento')
+
+
+   def get_queryset(self, request):
+        return super().get_queryset(request).select_related(
+            'usuario', 'materia', 'materia__semestre'
+        )
