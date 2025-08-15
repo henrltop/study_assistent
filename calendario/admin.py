@@ -50,3 +50,4 @@ class RecorrenciaEventoAdmin(admin.ModelAdmin):
         return super().get_queryset(request).select_related('evento')
 
 
+alteração muito foda n sei oq 
