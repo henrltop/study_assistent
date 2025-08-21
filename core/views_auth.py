@@ -3,12 +3,14 @@ Views de autenticação personalizadas.
 """
 
 from django.shortcuts import render, redirect
-from django.contrib.auth import login
+from django.contrib.auth import login, get_user_model
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from django.views import View
-from django.contrib.auth.models import User
 from django import forms
+
+# Usar o modelo de usuário customizado
+User = get_user_model()
 
 
 class RegistroForm(UserCreationForm):

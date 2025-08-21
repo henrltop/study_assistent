@@ -3,7 +3,7 @@ Management command para popular o banco com dados de exemplo.
 """
 
 from django.core.management.base import BaseCommand
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.utils import timezone
 from datetime import datetime, timedelta
 import random
@@ -11,6 +11,9 @@ import random
 from academico.models import (
     Semestre, Materia, MaterialDidatico, EventoAgenda, Tarefa
 )
+
+# Usar o modelo de usuário customizado
+User = get_user_model()
 
 
 class Command(BaseCommand):
