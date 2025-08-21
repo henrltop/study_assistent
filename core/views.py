@@ -21,6 +21,13 @@ from agentes.servicos import servico_agente
 def home(request):
     """Página inicial do sistema."""
     
+    # Se usuário não estiver logado, mostrar página de apresentação
+    if not request.user.is_authenticated:
+        return render(request, 'core/apresentacao.html', {
+            'titulo_pagina': 'Assistente de Estudos - Organize seus estudos com IA'
+        })
+    
+    # Usuário logado - mostrar dashboard completo
     # Agenda geral - próximos 7 dias
     data_limite = timezone.now() + timedelta(days=7)
     eventos_proximos = EventoAgenda.objects.filter(
@@ -50,12 +57,13 @@ def home(request):
         'total_semestres': total_semestres,
         'total_materias': total_materias,
         'total_eventos': total_eventos,
-        'titulo_pagina': 'Assistente de Estudos'
+        'titulo_pagina': 'Dashboard - Assistente de Estudos'
     }
     
     return render(request, 'core/home.html', context)
 
 
+@login_required
 def chat_home(request):
     """Placeholder para o chat da home (em breve)."""
     
@@ -85,6 +93,7 @@ def chat_home(request):
     return redirect('home')
 
 
+@login_required
 def semestres_lista(request):
     """Lista todos os semestres, destacando o semestre atual."""
     from django.utils import timezone
@@ -116,6 +125,7 @@ def semestres_lista(request):
     return render(request, 'core/semestres_lista.html', context)
 
 
+@login_required
 def semestre_detail(request, pk):
     """Detalhes de um semestre específico."""
     
@@ -143,6 +153,7 @@ def semestre_detail(request, pk):
     return render(request, 'core/semestre_detail.html', context)
 
 
+@login_required
 @require_POST
 def semestre_agente(request, pk):
     """Endpoint para o agente do semestre."""
@@ -179,6 +190,7 @@ def semestre_agente(request, pk):
     return redirect('semestre_detail', pk=pk)
 
 
+@login_required
 def buscar(request):
     """Busca global no sistema - pode ser acessada diretamente."""
     
@@ -220,6 +232,7 @@ def buscar(request):
     return render(request, 'core/buscar.html', context)
 
 
+@login_required
 def evento_form(request):
     """Formulário para criar/editar eventos (placeholder)."""
     

@@ -1,0 +1,262 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section Principal -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card hero-card text-white-force">
+            <div class="card-body py-5">
+                <div class="row align-items-center">
+                    <div class="col-lg-7">
+                        <div class="mb-4">
+                            <h1 class="display-4 fw-bold mb-3 text-white-force">
+                                <i class="bi bi-mortarboard me-3 text-primary"></i>
+                                Assistente de Estudos
+                            </h1>
+                            <h2 class="display-6 fw-light mb-4 text-primary">
+                                Organize seus estudos com Inteligência Artificial
+                            </h2>
+                            <p class="lead mb-4" style="color: var(--theme-text-secondary) !important; font-size: 1.25rem;">
+                                Transforme sua jornada acadêmica com uma plataforma completa que combina organização inteligente 
+                                e agentes de IA especializados para maximizar seu aprendizado.
+                            </p>
+                        </div>
+                        
+                        <div class="d-flex flex-wrap gap-3 mb-4">
+                            <a href="{% url 'registro' %}" class="btn btn-primary btn-lg px-4">
+                                <i class="bi bi-person-plus me-2"></i>Comece Gratuitamente
+                            </a>
+                            <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg px-4">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Já tenho conta
+                            </a>
+                        </div>
+                        
+                        <div class="d-flex align-items-center text-muted">
+                            <i class="bi bi-shield-check me-2 text-success"></i>
+                            <small>Gratuito • Sem compromisso • Comece em 30 segundos</small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-5 text-center">
+                        <div class="position-relative">
+                            <i class="bi bi-robot display-1 text-primary mb-3" style="font-size: 8rem; opacity: 0.9;"></i>
+                            <div class="position-absolute top-0 end-0">
+                                <i class="bi bi-stars text-warning" style="font-size: 2rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Funcionalidades Principais -->
+<div class="row mb-5">
+    <div class="col-12 mb-4">
+        <div class="text-center">
+            <h2 class="display-6 mb-3">Tudo que você precisa para estudar melhor</h2>
+            <p class="lead text-muted">Uma plataforma completa para organizar, acompanhar e otimizar seus estudos</p>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100 border-theme feature-card">
+            <div class="card-body text-center p-4">
+                <div class="mb-3">
+                    <i class="bi bi-calendar3 text-primary" style="font-size: 3rem;"></i>
+                </div>
+                <h4 class="card-title mb-3">Gestão de Semestres</h4>
+                <p class="card-text text-muted">
+                    Organize seus semestres, matérias e conteúdos de forma intuitiva. 
+                    Mantenha tudo estruturado e fácil de encontrar.
+                </p>
+                <ul class="list-unstyled text-start mt-3">
+                    <li><i class="bi bi-check-circle text-success me-2"></i>Calendário acadêmico completo</li>
+                    <li><i class="bi bi-check-circle text-success me-2"></i>Organização por matérias</li>
+                    <li><i class="bi bi-check-circle text-success me-2"></i>Acompanhamento de progresso</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100 border-theme feature-card">
+            <div class="card-body text-center p-4">
+                <div class="mb-3">
+                    <i class="bi bi-robot text-primary" style="font-size: 3rem;"></i>
+                </div>
+                <h4 class="card-title mb-3">Agentes de IA Especializados</h4>
+                <p class="card-text text-muted">
+                    Conte com assistentes inteligentes especializados em cada matéria 
+                    para tirar dúvidas e acelerar seu aprendizado.
+                </p>
+                <ul class="list-unstyled text-start mt-3">
+                    <li><i class="bi bi-check-circle text-success me-2"></i>IA personalizada por matéria</li>
+                    <li><i class="bi bi-check-circle text-success me-2"></i>Respostas contextualizadas</li>
+                    <li><i class="bi bi-check-circle text-success me-2"></i>Disponível 24/7</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100 border-theme feature-card">
+            <div class="card-body text-center p-4">
+                <div class="mb-3">
+                    <i class="bi bi-journal-bookmark text-primary" style="font-size: 3rem;"></i>
+                </div>
+                <h4 class="card-title mb-3">Materiais Organizados</h4>
+                <p class="card-text text-muted">
+                    Centralize todos seus materiais de estudo, anotações e recursos 
+                    em um só lugar, sempre organizados e acessíveis.
+                </p>
+                <ul class="list-unstyled text-start mt-3">
+                    <li><i class="bi bi-check-circle text-success me-2"></i>Upload de arquivos</li>
+                    <li><i class="bi bi-check-circle text-success me-2"></i>Anotações integradas</li>
+                    <li><i class="bi bi-check-circle text-success me-2"></i>Busca inteligente</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Como Funciona -->
+<div class="row mb-5">
+    <div class="col-12 mb-4">
+        <div class="text-center">
+            <h2 class="display-6 mb-3">Como funciona</h2>
+            <p class="lead text-muted">Comece a usar em 3 passos simples</p>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mb-4">
+        <div class="text-center">
+            <div class="mb-3">
+                <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" 
+                     style="width: 80px; height: 80px; font-size: 2rem; font-weight: bold;">
+                    1
+                </div>
+            </div>
+            <h4 class="mb-3">Crie sua conta</h4>
+            <p class="text-muted">
+                Cadastre-se gratuitamente em segundos. 
+                Não precisamos de cartão de crédito.
+            </p>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mb-4">
+        <div class="text-center">
+            <div class="mb-3">
+                <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" 
+                     style="width: 80px; height: 80px; font-size: 2rem; font-weight: bold;">
+                    2
+                </div>
+            </div>
+            <h4 class="mb-3">Configure seus estudos</h4>
+            <p class="text-muted">
+                Adicione seus semestres, matérias e 
+                materiais de estudo à plataforma.
+            </p>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mb-4">
+        <div class="text-center">
+            <div class="mb-3">
+                <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" 
+                     style="width: 80px; height: 80px; font-size: 2rem; font-weight: bold;">
+                    3
+                </div>
+            </div>
+            <h4 class="mb-3">Estude com IA</h4>
+            <p class="text-muted">
+                Use nossos agentes especializados para 
+                tirar dúvidas e acelerar seu aprendizado.
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Call to Action Final -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card border-primary">
+            <div class="card-body text-center py-5">
+                <h2 class="display-6 mb-3">Pronto para revolucionar seus estudos?</h2>
+                <p class="lead mb-4">Junte-se a milhares de estudantes que já estão usando IA para estudar melhor.</p>
+                
+                <div class="d-flex justify-content-center gap-3 mb-4">
+                    <a href="{% url 'registro' %}" class="btn btn-primary btn-lg px-5">
+                        <i class="bi bi-rocket me-2"></i>Começar Agora - Grátis
+                    </a>
+                </div>
+                
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <div class="d-flex justify-content-center align-items-center gap-4 flex-wrap text-muted">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                <small>Gratuito para sempre</small>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                <small>Sem limites de uso</small>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                <small>Cancele quando quiser</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.hero-card {
+    background: linear-gradient(135deg, var(--theme-bg-secondary) 0%, var(--theme-bg-primary) 100%);
+    border: 1px solid var(--theme-border);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.feature-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid var(--theme-border);
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    border-color: var(--theme-primary);
+}
+
+.text-white-force {
+    color: var(--theme-text-primary) !important;
+}
+
+.display-4, .display-6 {
+    font-weight: 700;
+}
+
+@media (max-width: 768px) {
+    .display-4 {
+        font-size: 2.5rem;
+    }
+    
+    .display-6 {
+        font-size: 1.8rem;
+    }
+    
+    .hero-card .card-body {
+        padding: 2rem 1rem !important;
+    }
+}
+</style>
+{% endblock %}

@@ -80,6 +80,7 @@ def materia_edit(request, slug):
     return render(request, 'academico/materia_form_completo.html', context)
 
 
+@login_required
 def materias_lista(request):
     """Lista todas as matérias com filtros e busca."""
     
@@ -129,6 +130,7 @@ def materias_lista(request):
     return render(request, 'academico/materias_lista.html', context)
 
 
+@login_required
 def agenda_geral(request):
     """Agenda geral com todos os eventos."""
     
@@ -204,6 +206,7 @@ def evento_geral_create(request):
     return render(request, 'academico/evento_form.html', context)
 
 
+@login_required
 def todolist_geral(request):
     """Lista geral de todas as tarefas (dashboard)."""
     
@@ -263,6 +266,7 @@ def todolist_geral(request):
     return render(request, 'academico/todolist_geral.html', context)
 
 
+@login_required
 def todolist_semestre(request, pk):
     """Lista de tarefas de um semestre específico."""
     
@@ -327,6 +331,7 @@ def todolist_semestre(request, pk):
     return render(request, 'academico/todolist_semestre.html', context)
 
 
+@login_required
 def materials_lista(request):
     """Lista todos os materiais didáticos."""
     

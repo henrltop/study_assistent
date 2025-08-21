@@ -24,6 +24,7 @@ from .forms import (
 from agentes.servicos import servico_agente
 
 
+@login_required
 def materia_detail(request, slug):
     """Detalhes de uma matéria específica."""
     
@@ -70,6 +71,7 @@ def materia_detail(request, slug):
     return render(request, 'academico/materia_detail.html', context)
 
 
+@login_required
 @require_POST
 def materia_tutor(request, slug):
     """Endpoint para o tutor (agente) da matéria."""
@@ -157,6 +159,7 @@ def material_upload(request, slug):
     return render(request, 'academico/material_upload.html', context)
 
 
+@login_required
 def material_download(request, pk):
     """Download de material didático."""
     
