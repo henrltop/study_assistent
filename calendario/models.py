@@ -1,8 +1,10 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 from academico.models import Materia
+
+User = get_user_model()
 
 class EventoCalendario(models.Model):
     class TipoEvento(models.TextChoices):
@@ -57,9 +59,8 @@ class EventoCalendario(models.Model):
         verbose_name = _("Evento do Calendário")
         verbose_name_plural = _("Eventos do Calendário")
         indexes = [
-            models.Index(fields=['data_inicio']),
             models.Index(fields=['usuario', 'data_inicio']),
-            models.Index(fields=['tipo_evento']),
+            models.Index(fields=['usuario', 'tipo_evento']),
         ]
     
     def __str__(self):

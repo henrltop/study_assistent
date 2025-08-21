@@ -1,8 +1,10 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.utils import timezone
 import os
+
+User = get_user_model()
 
 class Semestre(models.Model):
     """Modelo para representar semestres acadêmicos."""
@@ -14,6 +16,7 @@ class Semestre(models.Model):
         ('INVERNO', 'Inverno'),
     ]
     
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='semestres', verbose_name='Usuário')
     nome = models.CharField('Nome', max_length=100)
     ano = models.IntegerField('Ano')
     periodo = models.CharField('Período', max_length=10, choices=PERIODO_CHOICES)
@@ -25,7 +28,7 @@ class Semestre(models.Model):
         verbose_name = 'Semestre'
         verbose_name_plural = 'Semestres'
         ordering = ['-ano', '-periodo']
-        unique_together = ['ano', 'periodo']
+        unique_together = ['usuario', 'ano', 'periodo']
     
     def __str__(self):
         return f"{self.nome} - {self.ano}/{self.get_periodo_display()}"
@@ -161,7 +164,7 @@ class EventoAgenda(models.Model):
                               related_name='eventos', verbose_name='Matéria')
     
     criado_em = models.DateTimeField('Criado em', auto_now_add=True)
-    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Usuário')
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Usuário')
     
     class Meta:
         verbose_name = 'Evento da Agenda'
@@ -212,7 +215,7 @@ class Tarefa(models.Model):
     prazo = models.DateTimeField('Prazo', null=True, blank=True)
     criado_em = models.DateTimeField('Criado em', auto_now_add=True)
     atualizado_em = models.DateTimeField('Atualizado em', auto_now=True)
-    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Usuário')
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Usuário')
     
     class Meta:
         verbose_name = 'Tarefa'
@@ -242,7 +245,7 @@ class AcessoMateria(models.Model):
     """Modelo para registrar acessos às matérias (para ranking)."""
     
     materia = models.ForeignKey(Materia, on_delete=models.CASCADE, related_name='acessos', verbose_name='Matéria')
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Usuário')
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Usuário')
     data_hora = models.DateTimeField('Data e Hora', auto_now_add=True)
     ip_address = models.GenericIPAddressField('Endereço IP', null=True, blank=True)
     
