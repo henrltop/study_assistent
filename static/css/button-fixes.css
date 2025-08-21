@@ -1,0 +1,52 @@
+/* Correções para botões da tela inicial */
+.btn-primary,
+.btn-success,
+.btn-outline-primary,
+.btn-outline-success {
+    transition: all 0.3s ease;
+}
+
+/* Garante que o texto não desapareça no hover */
+.btn-primary:hover,
+.btn-success:hover {
+    color: white !important;
+    opacity: 0.9;
+}
+
+.btn-outline-primary:hover {
+    color: white !important;
+    background-color: var(--bs-primary) !important;
+    border-color: var(--bs-primary) !important;
+}
+
+.btn-outline-success:hover {
+    color: white !important;
+    background-color: var(--bs-success) !important;
+    border-color: var(--bs-success) !important;
+}
+
+/* Correções específicas para botões com classes customizadas */
+.btn:hover {
+    color: inherit !important;
+    text-decoration: none !important;
+}
+
+/* Se houver botões com gradiente */
+.btn-gradient:hover {
+    color: white !important;
+    opacity: 0.9;
+}
+
+/* Botões hero da página inicial */
+.hero-btn,
+.cta-btn {
+    color: white !important;
+    text-decoration: none !important;
+}
+
+.hero-btn:hover,
+.cta-btn:hover {
+    color: white !important;
+    opacity: 0.9;
+    transform: translateY(-2px);
+}

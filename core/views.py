@@ -118,7 +118,8 @@ def semestres_lista(request):
     context = {
         'semestre_atual': semestre_atual,
         'outros_semestres': outros_semestres,
-        'semestres': semestres,  # Mantém compatibilidade
+        'semestres': semestres,
+        'pode_criar_semestre': request.user.is_staff or request.user.is_superuser,
         'titulo_pagina': 'Semestres'
     }
     

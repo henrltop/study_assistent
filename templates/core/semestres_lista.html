@@ -117,7 +117,7 @@
             </h1>
             <p class="text-muted mb-0">Gerencie seus semestres letivos</p>
         </div>
-        {% if user.is_staff %}
+        {% if semestre_atual or outros_semestres %}
             <a href="{% url 'admin:academico_semestre_add' %}" class="btn btn-adicionar-semestre">
                 <i class="bi bi-plus-circle me-2"></i>Novo Semestre
             </a>
